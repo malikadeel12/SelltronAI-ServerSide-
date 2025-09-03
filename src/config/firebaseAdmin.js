@@ -21,17 +21,17 @@ function initializeFirebaseAdmin() {
 
   // --- Credential Resolution ---
   // Preferred: GOOGLE_APPLICATION_CREDENTIALS points to serviceAccountKey.json
-  const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+//  const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
   const inlineCreds = process.env.FIREBASE_ADMIN_CREDENTIALS;
 
-  if (credentialsPath && fs.existsSync(credentialsPath)) {
+  /*if (credentialsPath && fs.existsSync(credentialsPath)) {
     const serviceAccount = JSON.parse(fs.readFileSync(credentialsPath, "utf8"));
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
     return admin.app();
   }
-
+*/
   if (inlineCreds) {
     // Support base64 or raw JSON string
     let jsonString = inlineCreds;
