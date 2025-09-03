@@ -3,3 +3,4 @@ node_modules
 .env.production
 # Firebase keys ignore
 src/firebasekey/serviceAccountKey.json
+.DS_Store
