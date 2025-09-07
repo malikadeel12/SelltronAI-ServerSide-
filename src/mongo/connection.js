@@ -1,13 +1,4 @@
 import mongoose from "mongoose";
-
-/**
- * Change Summary (MCP Context 7 Best Practices)
- * - Adds MongoDB connection helper using Mongoose with safe fallback.
- * - Why: Project will persist sessions/logs later; for now, it no-ops if MONGO_URI is absent.
- * - Related: `src/index.js` bootstraps connection at startup.
- * - Future: Add models under `src/mongo/models/*` as needed.
- */
-
 let isConnected = false;
 
 // --- Mongo Connection (Safe) ---

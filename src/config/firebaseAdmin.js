@@ -2,7 +2,7 @@ import admin from "firebase-admin";
 import dotenv from "dotenv";
 // Ensure environment variables are loaded BEFORE reading process.env values
 // This avoids issues where this module is imported before `dotenv.config()` in the entrypoint
-dotenv.config();
+dotenv.config({ path: '.env.local' });
 import fs from "fs";
 
 /**
@@ -20,10 +20,16 @@ function initializeFirebaseAdmin() {
   }
 
   // --- Credential Resolution ---
-  // Preferred: GOOGLE_APPLICATION_CREDENTIALS points to serviceAccountKey.json
+  // First try: GOOGLE_APPLICATION_CREDENTIALS environment variable
 //  const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+  
+  // Second try: Default service account key file location
+  const defaultCredentialsPath = "./src/firebasekey/serviceAccountKey.json";
+  
+  // Third try: Inline credentials from environment
   const inlineCreds = process.env.FIREBASE_ADMIN_CREDENTIALS;
 
+  // Try credentials path first
   /*if (credentialsPath && fs.existsSync(credentialsPath)) {
     const serviceAccount = JSON.parse(fs.readFileSync(credentialsPath, "utf8"));
     admin.initializeApp({
@@ -31,7 +37,18 @@ function initializeFirebaseAdmin() {
     });
     return admin.app();
   }
-*/
+    */
+  
+  // Try default path
+  if (fs.existsSync(defaultCredentialsPath)) {
+    const serviceAccount = JSON.parse(fs.readFileSync(defaultCredentialsPath, "utf8"));
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+    return admin.app();
+  }
+
+  // Try inline credentials
   if (inlineCreds) {
     // Support base64 or raw JSON string
     let jsonString = inlineCreds;
@@ -48,9 +65,9 @@ function initializeFirebaseAdmin() {
     return admin.app();
   }
 
-  // Fallback: application default credentials (ADC)
-  admin.initializeApp();
-  return admin.app();
+  // Fallback: application default credentials (ADC) - this is what's causing the error
+  console.error("No Firebase credentials found! Please set up service account key.");
+  throw new Error("Firebase Admin SDK not properly configured. Please check your service account key file.");
 }
 
 // Initialize on import for simplicity

@@ -5,8 +5,9 @@ import protectedRoutes from "./routes/protected.js";
 import authRoutes from "./routes/auth.js";
 import { connectToDatabase } from "./mongo/connection.js";
 import voiceRoutes from "./routes/voice.js";
+// Load env from .env.local first (user keeps keys there), then fallback to .env
+dotenv.config({ path: ".env.local" });
 dotenv.config();
-
 const app = express();
 
 // --- Allowed Frontend Domains ---
