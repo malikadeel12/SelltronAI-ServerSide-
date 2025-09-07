@@ -70,6 +70,15 @@ router.get("/config", (req, res) => {
 router.post("/stt", upload.single("audio"), async (req, res) => {
   try {
     const language = req.body?.language || "en-US";
+    // Optional accuracy tuners
+    const sttModel = req.body?.sttModel || 'latest_long';
+    let hints = [];
+    if (Array.isArray(req.body?.hints)) {
+      hints = req.body.hints;
+    } else if (typeof req.body?.hints === 'string' && req.body.hints.trim()) {
+      try { hints = JSON.parse(req.body.hints); } catch (_) { hints = req.body.hints.split(',').map(s => s.trim()).filter(Boolean); }
+    }
+    const boost = Number(req.body?.boost) || 15.0;
     // Detect encoding: prefer client-provided hint, else infer from mimetype
     let encoding = (req.body?.encoding || "").toUpperCase();
     const mime = req.file?.mimetype || "";
@@ -97,7 +106,9 @@ router.post("/stt", upload.single("audio"), async (req, res) => {
         languageCode: language,
         alternativeLanguageCodes: ['en-US', 'es-ES', 'fr-FR', 'de-DE'],
         enableAutomaticPunctuation: true,
-        model: 'latest_long',
+        model: sttModel,
+        // Speech adaptation: phrase hints to bias specific words/phrases
+        speechContexts: hints.length ? [{ phrases: hints, boost }] : undefined,
       },
     };
 
@@ -226,6 +237,16 @@ router.post("/pipeline", upload.single("audio"), async (req, res) => {
         else if (mime.includes("wav")) encoding = "LINEAR16";
         else encoding = "WEBM_OPUS";
       }
+      // Optional accuracy tuners
+      const sttModel = req.body?.sttModel || 'latest_long';
+      let hints = [];
+      if (Array.isArray(req.body?.hints)) {
+        hints = req.body.hints;
+      } else if (typeof req.body?.hints === 'string' && req.body.hints.trim()) {
+        try { hints = JSON.parse(req.body.hints); } catch (_) { hints = req.body.hints.split(',').map(s => s.trim()).filter(Boolean); }
+      }
+      const boost = Number(req.body?.boost) || 15.0;
+
       const sttRequest = {
         audio: { content: audioBytes },
         config: {
@@ -233,9 +254,11 @@ router.post("/pipeline", upload.single("audio"), async (req, res) => {
           sampleRateHertz: 48000,
           languageCode: language,
           enableAutomaticPunctuation: true,
-          model: 'latest_long',
+          model: sttModel,
           enableWordTimeOffsets: false,
           enableWordConfidence: false,
+          // Speech adaptation: phrase hints to bias specific words/phrases
+          speechContexts: hints.length ? [{ phrases: hints, boost }] : undefined,
         },
       };
       console.log("🎯 SERVER: STT request config:", sttRequest.config, "mimetype:", mime);
