@@ -70,6 +70,16 @@ router.get("/config", (req, res) => {
 router.post("/stt", upload.single("audio"), async (req, res) => {
   try {
     const language = req.body?.language || "en-US";
+    // Detect encoding: prefer client-provided hint, else infer from mimetype
+    let encoding = (req.body?.encoding || "").toUpperCase();
+    const mime = req.file?.mimetype || "";
+    if (!encoding) {
+      if (mime.includes("ogg")) encoding = "OGG_OPUS";
+      else if (mime.includes("webm")) encoding = "WEBM_OPUS";
+      else if (mime.includes("wav")) encoding = "LINEAR16";
+      else encoding = "WEBM_OPUS"; // default
+    }
+    console.log("🎯 SERVER: STT chosen encoding:", encoding, "mimetype:", mime);
     
     if (!req.file) {
       return res.status(400).json({ error: "No audio file provided" });
@@ -82,7 +92,7 @@ router.post("/stt", upload.single("audio"), async (req, res) => {
         content: audioBytes,
       },
       config: {
-        encoding: 'WEBM_OPUS',
+        encoding,
         sampleRateHertz: 48000,
         languageCode: language,
         alternativeLanguageCodes: ['en-US', 'es-ES', 'fr-FR', 'de-DE'],
@@ -207,10 +217,19 @@ router.post("/pipeline", upload.single("audio"), async (req, res) => {
     try {
       console.log("🎯 SERVER: Starting STT (Speech-to-Text)...");
       const audioBytes = req.file.buffer.toString('base64');
+      // Detect encoding: prefer client-provided hint, else infer from mimetype
+      let encoding = (req.body?.encoding || "").toUpperCase();
+      const mime = req.file?.mimetype || "";
+      if (!encoding) {
+        if (mime.includes("ogg")) encoding = "OGG_OPUS";
+        else if (mime.includes("webm")) encoding = "WEBM_OPUS";
+        else if (mime.includes("wav")) encoding = "LINEAR16";
+        else encoding = "WEBM_OPUS";
+      }
       const sttRequest = {
         audio: { content: audioBytes },
         config: {
-          encoding: 'WEBM_OPUS',
+          encoding,
           sampleRateHertz: 48000,
           languageCode: language,
           enableAutomaticPunctuation: true,
@@ -219,7 +238,7 @@ router.post("/pipeline", upload.single("audio"), async (req, res) => {
           enableWordConfidence: false,
         },
       };
-      console.log("🎯 SERVER: STT request config:", sttRequest.config);
+      console.log("🎯 SERVER: STT request config:", sttRequest.config, "mimetype:", mime);
       console.log("🎯 SERVER: Audio data size:", audioBytes.length, "characters");
       const [sttResponse] = await speechClient.recognize(sttRequest);
       console.log("🎯 SERVER: STT raw response:", JSON.stringify(sttResponse, null, 2));
