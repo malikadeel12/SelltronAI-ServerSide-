@@ -231,6 +231,44 @@ router.post("/verify-user-email", async (req, res) => {
   }
 });
 
+// --- Update user profile ---
+router.post("/update-profile", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization || "";
+    const [, token] = authHeader.split(" ");
+    if (!token) return res.status(401).json({ error: "Missing bearer token" });
+
+    // Verify the user's token
+    const decoded = await adminAuth.verifyIdToken(token, true);
+    const { phoneNumber } = req.body;
+
+    if (!phoneNumber) {
+      return res.status(400).json({ error: "Phone number is required" });
+    }
+
+    // Validate phone number format
+    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+    if (!phoneRegex.test(phoneNumber.replace(/\s/g, ''))) {
+      return res.status(400).json({ error: "Please enter a valid phone number" });
+    }
+
+    // Update user profile in Firebase Auth (if needed)
+    await adminAuth.updateUser(decoded.uid, {
+      phoneNumber: phoneNumber.trim()
+    });
+
+    return res.json({ 
+      success: true, 
+      message: "Profile updated successfully",
+      phoneNumber: phoneNumber.trim()
+    });
+  } catch (e) {
+    console.error('Error updating profile:', e);
+    if (e.code === 'auth/invalid-phone-number') {
+      return res.status(400).json({ error: "Invalid phone number format" });
+    }
+    return res.status(500).json({ error: "Failed to update profile. Please try again." });
+  }
+});
+
 export default router;
-
-
