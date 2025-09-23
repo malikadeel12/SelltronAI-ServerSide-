@@ -4,6 +4,24 @@ import { SpeechClient } from "@google-cloud/speech";
 import { TextToSpeechClient } from "@google-cloud/text-to-speech";
 import OpenAI from "openai";
 import fs from "fs";   // <-- yeh add karo
+import salesQAService from "../services/salesQAService.js";
+
+// --- Helper function to extract user question from frontend prompt ---
+function extractUserQuestion(transcript) {
+  // The frontend sends: "Customer said: "question". SALES MODE INSTRUCTIONS: ..."
+  // We need to extract just the question part
+  
+  // Look for the pattern: Customer said: "question"
+  const match = transcript.match(/Customer said:\s*"([^"]+)"/i);
+  if (match && match[1]) {
+    return match[1].trim();
+  }
+  
+  // Fallback: if no match found, return the original transcript
+  console.log("⚠️ Could not extract user question from prompt, using original transcript");
+  return transcript;
+}
+
 // --- Decode Base64 Google Key (if provided) ---
 if (process.env.GOOGLE_CLOUD_KEY_BASE64) {
   try {
@@ -64,6 +82,28 @@ router.get("/config", (req, res) => {
     languages: ["en-US", "es-ES", "fr-FR", "de-DE"],
     notes: "Real Google Cloud TTS voices and supported languages.",
   });
+});
+
+// --- Sales Q&A Statistics ---
+router.get("/salesqa/stats", async (req, res) => {
+  try {
+    const questionCount = await salesQAService.getQuestionCount();
+    const categories = await salesQAService.getAllCategories();
+    
+    return res.json({
+      totalQuestions: questionCount,
+      totalCategories: categories.length,
+      categories: categories.map(cat => ({
+        name: cat.category,
+        description: cat.description,
+        questionCount: cat.questions.length
+      })),
+      success: true
+    });
+  } catch (error) {
+    console.error('SalesQA Stats Error:', error);
+    return res.status(500).json({ error: "Failed to get sales Q&A statistics" });
+  }
 });
 
 // --- Step 1: STT (Real Google Cloud Speech-to-Text) ---
@@ -133,25 +173,105 @@ router.post("/gpt", async (req, res) => {
       return res.status(400).json({ error: "No transcript provided" });
     }
 
-    // Create context-aware prompts based on mode
-    const systemPrompt = mode === "support" 
-      ? "You are a helpful customer support assistant. Be empathetic, understanding, and provide clear solutions to customer problems."
-      : "You are a professional sales assistant. Be persuasive, knowledgeable about products, and help close deals while being helpful and friendly.";
+    let responseText = "";
+    let matchedQuestion = null;
 
-    const userPrompt = `Customer said: "${transcript}". Please provide a helpful response that addresses their needs. Keep it concise and professional.`;
+    // For sales mode, first search MongoDB for matching questions
+    if (mode === "sales") {
+      console.log("🔍 Searching for matching question in sales database...");
+      
+      // Extract just the user's question from the frontend's prompt
+      const userQuestion = extractUserQuestion(transcript);
+      console.log("🎯 Extracted user question:", userQuestion);
+      
+      matchedQuestion = await salesQAService.findMatchingQuestion(userQuestion);
+      
+      if (matchedQuestion) {
+        console.log("✅ Found matching question:", matchedQuestion.question);
+        
+        // Create a prompt for GPT to analyze the 3 responses and return them in a specific format
+        const systemPrompt = `You are a professional sales assistant. You have been given a customer question and 3 possible responses (A, B, C). 
+        Your task is to analyze the customer's question and return the 3 responses in the following format:
+        
+        Response A: [first response]
+        Response B: [second response] 
+        Response C: [third response]
+        
+        Return ONLY the 3 responses in this exact format without any additional explanation or formatting.`;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
-      ],
-      max_tokens: 200,
-      temperature: 0.7,
+        const userPrompt = `Customer Question: "${transcript}"
+        
+Matched Question: "${matchedQuestion.question}"
+
+Available Responses:
+A) ${matchedQuestion.answers[0].text}
+B) ${matchedQuestion.answers[1].text}
+C) ${matchedQuestion.answers[2].text}
+
+Return the 3 responses in the specified format:`;
+
+        try {
+          const completion = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt }
+            ],
+            max_tokens: 300,
+            temperature: 0.3, // Lower temperature for more consistent selection
+          });
+
+          responseText = completion.choices[0].message.content.trim();
+          console.log("🤖 GPT analyzed and returned 3 responses:", responseText);
+        } catch (gptError) {
+          console.error('GPT Error in sales mode:', gptError);
+          // Fallback to returning the 3 original responses
+          responseText = `Response A: ${matchedQuestion.answers[0].text}\nResponse B: ${matchedQuestion.answers[1].text}\nResponse C: ${matchedQuestion.answers[2].text}`;
+        }
+      } else {
+        // No matching question found, use general sales response
+        console.log("❌ No matching question found, using general sales response");
+        const systemPrompt = "You are a professional sales assistant. Be persuasive, knowledgeable about products, and help close deals while being helpful and friendly.";
+        const userPrompt = `Customer said: "${transcript}". Please provide a helpful response that addresses their needs. Keep it concise and professional.`;
+
+        const completion = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+          max_tokens: 200,
+          temperature: 0.7,
+        });
+
+        responseText = completion.choices[0].message.content;
+      }
+    } else {
+      // For support mode, use original logic
+      const systemPrompt = "You are a helpful customer support assistant. Be empathetic, understanding, and provide clear solutions to customer problems.";
+      const userPrompt = `Customer said: "${transcript}". Please provide a helpful response that addresses their needs. Keep it concise and professional.`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        max_tokens: 200,
+        temperature: 0.7,
+      });
+
+      responseText = completion.choices[0].message.content;
+    }
+
+    return res.json({ 
+      responseText, 
+      mode,
+      matchedQuestion: matchedQuestion ? {
+        question: matchedQuestion.question,
+        category: matchedQuestion.category
+      } : null
     });
-
-    const responseText = completion.choices[0].message.content;
-    return res.json({ responseText, mode });
   } catch (error) {
     console.error('GPT Error:', error);
     return res.status(500).json({ error: "AI response generation failed" });
@@ -284,24 +404,96 @@ router.post("/pipeline", upload.single("audio"), async (req, res) => {
     // --- GPT ---
     try {
       console.log("🤖 SERVER: Starting GPT response generation...");
-      const systemPrompt = mode === "support" 
-        ? "You are a helpful customer support assistant. Be empathetic and provide clear solutions."
-        : "You are a professional sales assistant. Be persuasive and help close deals while being helpful.";
+      let matchedQuestion = null;
 
-      const userPrompt = `Customer said: "${transcript}". Please provide a helpful response. Keep it concise and professional.`;
-      console.log("🤖 SERVER: GPT prompt:", userPrompt);
+      // For sales mode, first search MongoDB for matching questions
+      if (mode === "sales") {
+        console.log("🔍 SERVER: Searching for matching question in sales database...");
+        
+        // Extract just the user's question from the frontend's prompt
+        const userQuestion = extractUserQuestion(transcript);
+        console.log("🎯 SERVER: Extracted user question:", userQuestion);
+        
+        matchedQuestion = await salesQAService.findMatchingQuestion(userQuestion);
+        
+        if (matchedQuestion) {
+          console.log("✅ SERVER: Found matching question:", matchedQuestion.question);
+          
+          // Create a prompt for GPT to analyze the 3 responses and return them in a specific format
+          const systemPrompt = `You are a professional sales assistant. You have been given a customer question and 3 possible responses (A, B, C). 
+          Your task is to analyze the customer's question and return the 3 responses in the following format:
+          
+          Response A: [first response]
+          Response B: [second response] 
+          Response C: [third response]
+          
+          Return ONLY the 3 responses in this exact format without any additional explanation or formatting.`;
 
-      const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        max_tokens: 200,
-        temperature: 0.7,
-      });
+          const userPrompt = `Customer Question: "${transcript}"
+          
+Matched Question: "${matchedQuestion.question}"
 
-      responseText = completion.choices[0].message.content;
+Available Responses:
+A) ${matchedQuestion.answers[0].text}
+B) ${matchedQuestion.answers[1].text}
+C) ${matchedQuestion.answers[2].text}
+
+Return the 3 responses in the specified format:`;
+
+          try {
+            const completion = await openai.chat.completions.create({
+              model: "gpt-3.5-turbo",
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt }
+              ],
+              max_tokens: 300,
+              temperature: 0.3, // Lower temperature for more consistent selection
+            });
+
+            responseText = completion.choices[0].message.content.trim();
+            console.log("🤖 SERVER: GPT analyzed and returned 3 responses:", responseText);
+          } catch (gptError) {
+            console.error('❌ SERVER: GPT Error in sales mode:', gptError);
+            // Fallback to returning the 3 original responses
+            responseText = `Response A: ${matchedQuestion.answers[0].text}\nResponse B: ${matchedQuestion.answers[1].text}\nResponse C: ${matchedQuestion.answers[2].text}`;
+          }
+        } else {
+          // No matching question found, use general sales response
+          console.log("❌ SERVER: No matching question found, using general sales response");
+          const systemPrompt = "You are a professional sales assistant. Be persuasive and help close deals while being helpful.";
+          const userPrompt = `Customer said: "${transcript}". Please provide a helpful response. Keep it concise and professional.`;
+
+          const completion = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt }
+            ],
+            max_tokens: 200,
+            temperature: 0.7,
+          });
+
+          responseText = completion.choices[0].message.content;
+        }
+      } else {
+        // For support mode, use original logic
+        const systemPrompt = "You are a helpful customer support assistant. Be empathetic and provide clear solutions.";
+        const userPrompt = `Customer said: "${transcript}". Please provide a helpful response. Keep it concise and professional.`;
+
+        const completion = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+          max_tokens: 200,
+          temperature: 0.7,
+        });
+
+        responseText = completion.choices[0].message.content;
+      }
+
       console.log("🤖 SERVER: GPT response:", responseText);
     } catch (gptError) {
       console.error('❌ SERVER: GPT Error in pipeline:', gptError);

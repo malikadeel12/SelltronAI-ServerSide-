@@ -1,0 +1,4258 @@
+[
+    {
+        "category": "Destroying Questions",
+        "description": "The most complex, tough-to-handle questions in sales.",
+        "questions": [
+            {
+                "question": "Why is your product so much more expensive than everyone else's?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because we focus on long-term ROI, not just upfront cost."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Our service includes premium support and updates others don't."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Clients who switched saw greater savings despite higher price."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know you're not overselling promises you can't keep?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Our results are backed by data and case studies."
+                    },
+                    {
+                        "option": "B",
+                        "text": "We set realistic expectations from day one."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Transparency is part of every contract."
+                    }
+                ]
+            },
+            {
+                "question": "What if your startup goes bankrupt—what happens to my investment?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Your data always remains yours."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Continuity plans guarantee service transition."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Strong financial backing reduces this risk."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I trust you over my current vendor of 10 years?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because innovation drives stronger ROI."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Many switched from long-term vendors for better results."
+                    },
+                    {
+                        "option": "C",
+                        "text": "We deliver faster support and personalization."
+                    }
+                ]
+            },
+            {
+                "question": "Can you guarantee measurable results?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We can't guarantee, but case data shows typical ROI."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Pilot projects let you measure risk-free."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Success metrics are tracked transparently."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I risk my career by choosing you?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because success elevates your position."
+                    },
+                    {
+                        "option": "B",
+                        "text": "We minimize risk with proven methods."
+                    },
+                    {
+                        "option": "C",
+                        "text": "References show leaders like you succeeded."
+                    }
+                ]
+            },
+            {
+                "question": "What makes you different from free solutions?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Support and reliability."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Free often costs more in the long run."
+                    },
+                    {
+                        "option": "C",
+                        "text": "We handle complexity they can't."
+                    }
+                ]
+            },
+            {
+                "question": "What if your competitor offers me 50% off tomorrow?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We compete on value, not just price."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Long-term ROI beats short-term discounts."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Quality ensures fewer hidden costs."
+                    }
+                ]
+            },
+            {
+                "question": "Why should this be a priority during an economic crisis?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because efficiency saves most in downturns."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Strong moves now prepare for recovery."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Waiting often costs more."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know your testimonials aren't fake?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Independent reviews exist."
+                    },
+                    {
+                        "option": "B",
+                        "text": "You can talk to real references."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Transparency builds trust."
+                    }
+                ]
+            },
+            {
+                "question": "What if implementation takes 12 months instead of 3?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We plan realistic milestones."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Continuous updates keep you informed."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Flexibility allows adjustments."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I believe your ROI numbers?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "They're backed by real client data."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Independent audits confirm results."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Benchmarks prove accuracy."
+                    }
+                ]
+            },
+            {
+                "question": "What happens if my team refuses to adopt the system?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We provide extra training."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Adoption is supported step by step."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Change management is included."
+                    }
+                ]
+            },
+            {
+                "question": "How do I explain this high cost to my board?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "With ready-to-use financial models."
+                    },
+                    {
+                        "option": "B",
+                        "text": "By focusing on ROI not cost."
+                    },
+                    {
+                        "option": "C",
+                        "text": "With peer success stories."
+                    }
+                ]
+            },
+            {
+                "question": "Why shouldn't I just wait 6 months before deciding?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because delay means lost savings."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Competitors may gain an edge."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Prices could rise."
+                    }
+                ]
+            },
+            {
+                "question": "What if your company disappears in 2 years?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Continuity clauses protect you."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Our financials show stability."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Partnerships secure longevity."
+                    }
+                ]
+            },
+            {
+                "question": "Why don't I just stay with the status quo?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because doing nothing often costs more."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Innovation is how leaders stay ahead."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Your competitors are evolving."
+                    }
+                ]
+            },
+            {
+                "question": "What if your software fails during peak season?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Redundant systems protect you."
+                    },
+                    {
+                        "option": "B",
+                        "text": "24/7 monitoring prevents downtime."
+                    },
+                    {
+                        "option": "C",
+                        "text": "SLA guarantees resolution."
+                    }
+                ]
+            },
+            {
+                "question": "Can you prove you're better than the market leader?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Yes, with side-by-side benchmarks."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Case studies show clear wins."
+                    },
+                    {
+                        "option": "C",
+                        "text": "We outperform in flexibility."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I listen to a cold call at all?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because it could unlock hidden value."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Leaders act on opportunities, not only inbound."
+                    },
+                    {
+                        "option": "C",
+                        "text": "A short call saves research time."
+                    }
+                ]
+            },
+            {
+                "question": "What if my legal team blocks the deal?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Our contracts are pre-approved templates."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Legal support is provided."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Experience accelerates approvals."
+                    }
+                ]
+            },
+            {
+                "question": "Why not buy from a local vendor?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We bring global expertise."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Local partners often lack scale."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Hybrid models combine both."
+                    }
+                ]
+            },
+            {
+                "question": "Can you guarantee adoption across departments?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Yes, with structured rollout."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Training ensures usage."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Ongoing optimization adapts."
+                    }
+                ]
+            },
+            {
+                "question": "What if results take too long to show?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Quick wins are built in."
+                    },
+                    {
+                        "option": "B",
+                        "text": "ROI is staged gradually."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Transparency manages expectations."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I trust you with sensitive data?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Certified compliance protects you."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Security is independently audited."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Privacy is non-negotiable."
+                    }
+                ]
+            },
+            {
+                "question": "What if your solution creates more work for my team?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Automation reduces workload."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Efficiency gains outweigh effort."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Training smooths adoption."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know you won't raise prices later?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Multi-year pricing locks are possible."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Transparency ensures fairness."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Value scales with investment."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I risk being your test client?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Early clients gain extra perks."
+                    },
+                    {
+                        "option": "B",
+                        "text": "We already have proven pilots."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Risk-sharing protects you."
+                    }
+                ]
+            },
+            {
+                "question": "What if competitors use your product too?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Then you can't afford to fall behind."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Your advantage is faster adoption."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Customization keeps you unique."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I listen if I'm not the decision-maker?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because your input shapes outcomes."
+                    },
+                    {
+                        "option": "B",
+                        "text": "We can empower you with material."
+                    },
+                    {
+                        "option": "C",
+                        "text": "You influence internal decisions."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know you won't oversell and underdeliver?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Contracts outline clear deliverables."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Clients confirm reliability."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Our track record proves delivery."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I believe this isn't just hype?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Case data backs every claim."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Independent reviews exist."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Real-world results prove it."
+                    }
+                ]
+            },
+            {
+                "question": "What if procurement refuses your terms?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We adapt to requirements."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Templates are flexible."
+                    },
+                    {
+                        "option": "C",
+                        "text": "We support negotiations."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I spend now with budget cuts?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because savings justify the spend."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Efficiency is critical in tight times."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Delay costs more long-term."
+                    }
+                ]
+            },
+            {
+                "question": "What if your competitor already pitched me?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Great—you can compare value."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Our flexibility sets us apart."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Case studies prove differences."
+                    }
+                ]
+            },
+            {
+                "question": "Why do I need this if business is running fine?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because \"fine\" isn't future-proof."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Efficiency always improves."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Growth requires change."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know this won't fail like past projects?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We use proven rollout frameworks."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Risk is minimized step by step."
+                    },
+                    {
+                        "option": "C",
+                        "text": "References confirm success."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I believe you'll support us long-term?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because partnerships drive our model."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Clients stay for years."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Ongoing support is contractually assured."
+                    }
+                ]
+            },
+            {
+                "question": "Can you handle global operations?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Yes, multi-region support is standard."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Languages and time zones are covered."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Infrastructure is global-ready."
+                    }
+                ]
+            },
+            {
+                "question": "What if your product doesn't integrate with ours?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "APIs make integration seamless."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Custom connectors exist."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Engineers support integration directly."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I trust sales talk?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because we prove with data, not words."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Independent validation exists."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Case studies show impact."
+                    }
+                ]
+            },
+            {
+                "question": "What if ROI never shows up?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "ROI is tracked transparently."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Quick wins mitigate risk."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Contracts align incentives."
+                    }
+                ]
+            },
+            {
+                "question": "Why not wait until competitors test you first?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Early adopters gain competitive edge."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Followers lose advantage."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Delay means missed value."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know your roadmap won't change?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Transparency ensures clarity."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Client input shapes roadmap."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Commitments are documented."
+                    }
+                ]
+            },
+            {
+                "question": "What if implementation disrupts my business?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Rollout minimizes disruption."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Pilots ensure smooth transition."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Support is always available."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I invest if industry is uncertain?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because agility ensures survival."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Efficiency shields against downturns."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Leaders invest when others hesitate."
+                    }
+                ]
+            },
+            {
+                "question": "What if my team thinks this adds no value?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We show value with pilots."
+                    },
+                    {
+                        "option": "B",
+                        "text": "ROI data proves worth."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Training ensures buy-in."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I trust ROI instead of cash savings today?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "ROI multiplies savings long-term."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Short-term cuts cost more later."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Strategic investment drives growth."
+                    }
+                ]
+            },
+            {
+                "question": "What if the market shifts next year?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We adapt with you."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Our product evolves constantly."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Flexibility protects investment."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I listen if I'm already skeptical?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Skepticism is smart—let us prove value."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Data will answer doubts."
+                    },
+                    {
+                        "option": "C",
+                        "text": "One pilot can show results."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I risk budget when last year's investments failed?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because this is backed by proven cases."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Failure taught us what to avoid."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Risk is minimized with step-by-step rollout."
+                    }
+                ]
+            },
+            {
+                "question": "What if your product becomes outdated in a year?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Regular updates keep it current."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Roadmap ensures future-proofing."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Adaptability is built in."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I invest when my staff is already overloaded?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because automation reduces their burden."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Efficiency frees up resources."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Training helps adoption smoothly."
+                    }
+                ]
+            },
+            {
+                "question": "What if my clients don't see the value?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We'll help you communicate benefits."
+                    },
+                    {
+                        "option": "B",
+                        "text": "ROI can be shown through case studies."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Feedback loops ensure alignment."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know you won't disappear after the contract is signed?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Contracts guarantee support."
+                    },
+                    {
+                        "option": "B",
+                        "text": "We focus on long-term clients."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Ongoing success is in our interest."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I trust projections instead of real results?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Projections are based on data."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Pilots provide real proof."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Benchmarks reduce guesswork."
+                    }
+                ]
+            },
+            {
+                "question": "What if my leadership team changes direction next quarter?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Flexibility adapts to new priorities."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Short-term wins keep momentum."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Alignment workshops help transitions."
+                    }
+                ]
+            },
+            {
+                "question": "Why not just do nothing and save money?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Doing nothing often costs more."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Competitors won't wait."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Missed opportunities hurt growth."
+                    }
+                ]
+            },
+            {
+                "question": "Can you guarantee my reputation won't be harmed?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Our track record shows safety."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Transparency protects you."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Success enhances reputation."
+                    }
+                ]
+            },
+            {
+                "question": "What if my CEO thinks this is a waste?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We'll provide CEO-level ROI proof."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Case studies show executive impact."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Direct briefing can be arranged."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know you won't pivot to another market?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Our roadmap is transparent."
+                    },
+                    {
+                        "option": "B",
+                        "text": "We're committed to your industry."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Client feedback guides direction."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I commit long-term when the future is uncertain?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Long-term deals protect you from price changes."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Flexibility is built in."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Strategic investment pays off in uncertainty."
+                    }
+                ]
+            },
+            {
+                "question": "What if integration costs exceed the product cost?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Integration is included in scope."
+                    },
+                    {
+                        "option": "B",
+                        "text": "We optimize to minimize costs."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Long-term ROI outweighs integration."
+                    }
+                ]
+            },
+            {
+                "question": "Why not just let my internal team build this?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because in-house takes longer."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Costs internally are often higher."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Expertise accelerates delivery."
+                    }
+                ]
+            },
+            {
+                "question": "What if you oversell features that don't exist yet?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Roadmap items are clearly labeled."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Current features meet today's needs."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Future features are optional add-ons."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know you'll keep supporting me after I sign?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Our model depends on renewals."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Long-term partnerships are our core."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Clients stay for years."
+                    }
+                ]
+            },
+            {
+                "question": "What if your training doesn't work for my staff?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We adapt training to your team."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Multiple formats are offered."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Extra support is always available."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I risk being an early adopter?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Early adopters gain competitive edge."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Special perks reward pioneers."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Proven pilots reduce risk."
+                    }
+                ]
+            },
+            {
+                "question": "What if adoption fails completely?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Refund or risk-sharing may apply."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Continuous support ensures adoption."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Failures are extremely rare."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know you won't lock me in unfairly?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Flexible contracts exist."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Exit clauses protect you."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Transparency prevents surprises."
+                    }
+                ]
+            },
+            {
+                "question": "What if my procurement team pushes back?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We align with their process."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Templates are pre-approved."
+                    },
+                    {
+                        "option": "C",
+                        "text": "We assist in negotiations."
+                    }
+                ]
+            },
+            {
+                "question": "Why do you claim urgency—is it just pressure tactics?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Urgency is based on market timing."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Delay costs clients more."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Pressure is never our approach."
+                    }
+                ]
+            },
+            {
+                "question": "What if my peers say this isn't needed?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Many peers changed their minds after results."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Industry leaders already use it."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Independent data proves need."
+                    }
+                ]
+            },
+            {
+                "question": "Can you guarantee this won't disrupt operations?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Rollout minimizes disruption."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Pilots ensure smooth transition."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Support covers all phases."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I pay when I can wait for a cheaper copycat?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Copycats lack proven quality."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Early adoption secures advantage."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Leaders invest in originality."
+                    }
+                ]
+            },
+            {
+                "question": "What if you fail to deliver promised updates?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Updates are contractual."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Our release record is strong."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Roadmaps are transparent."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know this isn't just sales talk?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because data backs every claim."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Independent proof exists."
+                    },
+                    {
+                        "option": "C",
+                        "text": "References confirm results."
+                    }
+                ]
+            },
+            {
+                "question": "What if ROI is lower than promised?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "ROI is tracked openly."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Adjustments maximize results."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Benchmarks manage expectations."
+                    }
+                ]
+            },
+            {
+                "question": "Why trust you with mission-critical processes?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Redundant systems ensure uptime."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Security standards are strict."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Clients trust us for critical roles."
+                    }
+                ]
+            },
+            {
+                "question": "What if my CFO demands immediate payback?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Quick wins ensure early ROI."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Payback periods are transparent."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Pilots reduce financial risk."
+                    }
+                ]
+            },
+            {
+                "question": "Why not just wait until the market stabilizes?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Leaders act in uncertainty."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Waiting risks missed chances."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Stability is never guaranteed."
+                    }
+                ]
+            },
+            {
+                "question": "What if competitors launch something better?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Innovation keeps us ahead."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Continuous updates protect you."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Flexibility adapts to shifts."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know your company culture aligns with ours?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Culture fit is part of onboarding."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Values are aligned transparently."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Collaboration proves compatibility."
+                    }
+                ]
+            },
+            {
+                "question": "What if regulators block this?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Compliance is built-in."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Legal experts guide adoption."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Adjustments ensure compliance."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I risk being first in my industry?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because first-movers win advantages."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Leaders set standards."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Early adoption pays off long-term."
+                    }
+                ]
+            },
+            {
+                "question": "What if your competitor offers a better roadmap?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Our roadmap adapts with client input."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Flexibility beats fixed plans."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Roadmap is transparent."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I tie myself to one vendor?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We offer open integrations."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Flexibility prevents lock-in."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Partnerships ensure choice."
+                    }
+                ]
+            },
+            {
+                "question": "What if my staff refuses to use it?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Training builds adoption."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Feedback loops adjust rollout."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Support reduces resistance."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know you won't pivot away from this product?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Client demand drives roadmap."
+                    },
+                    {
+                        "option": "B",
+                        "text": "We're committed long-term."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Contracts ensure continuity."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I spend on innovation during layoffs?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Innovation ensures future stability."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Efficiency reduces job risk."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Leaders invest even in downturns."
+                    }
+                ]
+            },
+            {
+                "question": "What if this fails to scale with growth?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Scalability is built-in."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Cloud ensures elasticity."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Pilots prove growth fit."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I trust you if you're not industry leader?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Leaders once started small too."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Innovation beats size."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Clients trust our results."
+                    }
+                ]
+            },
+            {
+                "question": "What if competitors undercut you constantly?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Value always beats price wars."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Service quality matters most."
+                    },
+                    {
+                        "option": "C",
+                        "text": "ROI ensures loyalty."
+                    }
+                ]
+            },
+            {
+                "question": "Can you prove this works globally?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Global case studies exist."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Multi-region support is standard."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Infrastructure is worldwide."
+                    }
+                ]
+            },
+            {
+                "question": "What if this doesn't align with my KPIs?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We map to your KPIs."
+                    },
+                    {
+                        "option": "B",
+                        "text": "ROI connects to goals."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Custom reports prove alignment."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I invest in tech my staff might not accept?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Adoption is supported end-to-end."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Training increases acceptance."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Change management is included."
+                    }
+                ]
+            },
+            {
+                "question": "What if economic downturn lasts years?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Efficiency sustains during downturns."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Long-term savings pay off."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Stability is created through adoption."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I risk capital on untested innovation?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Pilots prove before scaling."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Early adoption secures lead."
+                    },
+                    {
+                        "option": "C",
+                        "text": "ROI validates risk."
+                    }
+                ]
+            },
+            {
+                "question": "What if your product becomes irrelevant?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Adaptability ensures relevance."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Roadmap evolves constantly."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Client input drives updates."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I even consider this if I don't see the need?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Hidden costs often show value."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Competitors are already moving."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Pilots uncover opportunities."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I trust projections instead of proven savings?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because projections are based on real client benchmarks."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Pilots give you proof before scaling."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Transparency keeps expectations realistic."
+                    }
+                ]
+            },
+            {
+                "question": "What if my industry collapses in two years?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Flexibility ensures adaptation."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Efficiency helps survive downturns."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Investment now builds resilience."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I gamble on innovation in a conservative market?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Leaders in conservative markets win by innovating first."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Controlled pilots reduce risk."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Case studies show safe adoption."
+                    }
+                ]
+            },
+            {
+                "question": "What if your promises turn out exaggerated?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Every claim is backed by data."
+                    },
+                    {
+                        "option": "B",
+                        "text": "References confirm results."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Contracts define deliverables."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I pay for potential instead of guarantees?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because potential backed by data often pays off faster."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Guarantees are rare, but pilots prove ROI."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Shared-risk models align incentives."
+                    }
+                ]
+            },
+            {
+                "question": "What if my competitors copy me after I adopt this?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Being first secures advantage."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Customization keeps you unique."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Early adoption ensures market lead."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know this isn't just another tech fad?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because industry adoption proves it's lasting."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Analysts confirm long-term demand."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Our roadmap secures future relevance."
+                    }
+                ]
+            },
+            {
+                "question": "What if your service quality declines after scaling?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Processes ensure consistency."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Client feedback drives adjustments."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Dedicated teams manage scale."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I pay premium when cheaper vendors exist?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Premium ensures reliability."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Long-term costs are lower."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Service quality outweighs price."
+                    }
+                ]
+            },
+            {
+                "question": "What if my board demands proof within 3 months?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Quick wins are part of rollout."
+                    },
+                    {
+                        "option": "B",
+                        "text": "ROI dashboards show early results."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Benchmarks guide expectations."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I risk data breaches with your system?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Compliance ensures safety."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Independent audits prove security."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Clients trust us with sensitive data."
+                    }
+                ]
+            },
+            {
+                "question": "What if my staff resists change completely?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Training addresses resistance."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Change management is included."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Pilots ease transition."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know you won't abandon small clients?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Every client matters equally."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Long-term retention proves this."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Support is tailored to size."
+                    }
+                ]
+            },
+            {
+                "question": "Why invest in something that doesn't solve today's crisis?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because it prevents tomorrow's."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Efficiency helps even in crisis."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Leaders plan beyond today."
+                    }
+                ]
+            },
+            {
+                "question": "What if adoption disrupts ongoing projects?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Rollout is phased to avoid disruption."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Integration is low-impact."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Support minimizes risks."
+                    }
+                ]
+            },
+            {
+                "question": "Why trust a smaller vendor against global giants?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because agility beats bureaucracy."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Personalized service wins."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Clients prefer innovation over size."
+                    }
+                ]
+            },
+            {
+                "question": "What if I invest and never get ROI back?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "ROI is tracked transparently."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Pilots reduce upfront risk."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Long-term clients confirm payback."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I focus on growth when we need stability?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Growth creates stability long-term."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Efficiency supports both."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Balanced strategies protect you."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know your roadmap isn't wishful thinking?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Roadmap is client-driven."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Delivery track record is strong."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Transparency ensures accountability."
+                    }
+                ]
+            },
+            {
+                "question": "What if regulators impose new restrictions?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Compliance updates are included."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Legal partners guide changes."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Adaptation is part of service."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I pay now if you might drop prices later?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Early adopters get locked-in rates."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Value delivered exceeds price."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Future savings outweigh costs."
+                    }
+                ]
+            },
+            {
+                "question": "What if my competitors adopt faster than me?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Then they gain an edge."
+                    },
+                    {
+                        "option": "B",
+                        "text": "You should move first."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Adoption speed drives advantage."
+                    }
+                ]
+            },
+            {
+                "question": "Why not build this internally?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Internal builds are slower."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Expertise shortens delivery time."
+                    },
+                    {
+                        "option": "C",
+                        "text": "TCO is lower with us."
+                    }
+                ]
+            },
+            {
+                "question": "What if your product doesn't match our culture?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Culture fit is part of onboarding."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Flexibility adapts to you."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Collaboration ensures alignment."
+                    }
+                ]
+            },
+            {
+                "question": "Why trust you with mission-critical processes?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Our systems are redundant."
+                    },
+                    {
+                        "option": "B",
+                        "text": "SLAs guarantee uptime."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Clients trust us for critical roles."
+                    }
+                ]
+            },
+            {
+                "question": "What if leadership changes direction?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Our solution adapts."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Flexible contracts help."
+                    },
+                    {
+                        "option": "C",
+                        "text": "ROI data convinces new leaders."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I risk early adoption backlash?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Early adopters gain recognition."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Perks reward pioneers."
+                    },
+                    {
+                        "option": "C",
+                        "text": "ROI shows leadership value."
+                    }
+                ]
+            },
+            {
+                "question": "What if implementation costs spiral?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Fixed-price options exist."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Scope control prevents overruns."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Transparency ensures predictability."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know this isn't hype-driven?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Industry adoption proves it."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Analysts confirm demand."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Case studies show substance."
+                    }
+                ]
+            },
+            {
+                "question": "What if competitors already outperform you?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Benchmarks prove our edge."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Customization keeps us unique."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Updates close gaps quickly."
+                    }
+                ]
+            },
+            {
+                "question": "Why spend on innovation instead of saving cash?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Innovation secures long-term growth."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Savings today risk losses tomorrow."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Leaders invest strategically."
+                    }
+                ]
+            },
+            {
+                "question": "What if this adds hidden costs?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Transparency prevents surprises."
+                    },
+                    {
+                        "option": "B",
+                        "text": "TCO is fully calculated."
+                    },
+                    {
+                        "option": "C",
+                        "text": "ROI outweighs extras."
+                    }
+                ]
+            },
+            {
+                "question": "Why trust you with compliance-heavy data?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Compliance is certified."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Independent audits confirm."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Clients in regulated sectors trust us."
+                    }
+                ]
+            },
+            {
+                "question": "What if this creates internal resistance?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Stakeholder workshops reduce it."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Training builds acceptance."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Pilots ease transition."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I care about long-term ROI when I need savings today?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "ROI compounds over time."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Quick wins bring short-term savings too."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Balanced approach delivers both."
+                    }
+                ]
+            },
+            {
+                "question": "What if my staff quits because of change?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Change management protects teams."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Support builds morale."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Transition is gradual."
+                    }
+                ]
+            },
+            {
+                "question": "Why not just cut costs instead of investing?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Cuts weaken long-term growth."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Investment drives efficiency."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Leaders balance both."
+                    }
+                ]
+            },
+            {
+                "question": "What if adoption takes years?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Phased rollout reduces time."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Support accelerates adoption."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Flexibility adjusts to pace."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I take you seriously if you're new?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "New means agile."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Innovation beats legacy."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Clients trust fresh solutions."
+                    }
+                ]
+            },
+            {
+                "question": "What if ROI isn't measurable?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Custom KPIs track impact."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Dashboards ensure visibility."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Transparency measures outcomes."
+                    }
+                ]
+            },
+            {
+                "question": "Why pay premium for uncertainty?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because certainty costs more later."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Premium ensures stability."
+                    },
+                    {
+                        "option": "C",
+                        "text": "ROI outweighs uncertainty."
+                    }
+                ]
+            },
+            {
+                "question": "What if competitors already locked in advantages?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "You can still catch up fast."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Our solution bridges gaps."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Tailored approach beats legacy."
+                    }
+                ]
+            },
+            {
+                "question": "Why not wait for proven industry standards?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Standards come after innovation."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Early adopters set standards."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Waiting risks irrelevance."
+                    }
+                ]
+            },
+            {
+                "question": "What if my team refuses new training?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Multiple formats reduce friction."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Support makes training easy."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Incentives encourage adoption."
+                    }
+                ]
+            },
+            {
+                "question": "Why invest now when my revenue is dropping?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Efficiency offsets decline."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Growth requires proactive steps."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Delay worsens losses."
+                    }
+                ]
+            },
+            {
+                "question": "What if this doesn't align with strategy?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We align solution to strategy."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Customization bridges gaps."
+                    },
+                    {
+                        "option": "C",
+                        "text": "ROI supports long-term goals."
+                    }
+                ]
+            },
+            {
+                "question": "Why trust ROI promises over hard cash savings?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "ROI multiplies savings."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Cash savings fade, ROI grows."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Balanced approach delivers both."
+                    }
+                ]
+            },
+            {
+                "question": "What if this drains resources during crisis?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Rollout adapts to capacity."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Efficiency offsets effort."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Support eases load."
+                    }
+                ]
+            },
+            {
+                "question": "Why invest when my competitors are failing?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "This is your chance to get ahead."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Strong players expand in downturns."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Survival requires bold moves."
+                    }
+                ]
+            },
+            {
+                "question": "What if leadership says no despite my support?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We'll arm you with strong business cases."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Executive briefings help alignment."
+                    },
+                    {
+                        "option": "C",
+                        "text": "ROI data convinces top leaders."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I commit budget when I don't know the long-term ROI?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because pilots prove value early."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Long-term ROI compounds over time."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Transparency keeps it measurable."
+                    }
+                ]
+            },
+            {
+                "question": "What if your product fails under heavy usage?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Stress tests confirm resilience."
+                    },
+                    {
+                        "option": "B",
+                        "text": "SLAs guarantee performance."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Scalability is built in."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I trust new tech after past failures?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because this is backed by proven adoption."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Lessons from failures shaped it."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Case studies show safe rollouts."
+                    }
+                ]
+            },
+            {
+                "question": "What if this doesn't integrate with legacy systems?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "APIs bridge gaps."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Engineers adapt connectors."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Rollouts handle complexity."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I care about innovation if customers don't ask for it?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because leaders anticipate needs."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Customers follow innovation."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Market shifts demand it."
+                    }
+                ]
+            },
+            {
+                "question": "What if your competitor launches a superior product tomorrow?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "We adapt roadmaps quickly."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Client input shapes features."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Flexibility ensures competitiveness."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I spend during budget freezes?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because ROI funds itself."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Efficiency creates savings."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Delay risks higher costs."
+                    }
+                ]
+            },
+            {
+                "question": "What if staff turnover kills adoption?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Training refreshes constantly."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Processes ensure continuity."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Support adapts to changes."
+                    }
+                ]
+            },
+            {
+                "question": "Why trust you without Fortune 500 clients?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Mid-size clients confirm results."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Fortune 500 start small too."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Innovation matters more than logos."
+                    }
+                ]
+            },
+            {
+                "question": "What if regulations change mid-contract?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Compliance updates are included."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Legal partners guide adjustments."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Adaptation is part of support."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I tie up cash flow on this now?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because returns offset cash flow."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Payment plans ease burden."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Delay often costs more."
+                    }
+                ]
+            },
+            {
+                "question": "What if implementation slows my business down?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Rollout is designed to minimize disruption."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Phased adoption prevents downtime."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Dedicated support handles risks."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I trust your projections over my finance team's doubts?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because projections are data-backed."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Pilots give proof."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Finance teams get detailed ROI tools."
+                    }
+                ]
+            },
+            {
+                "question": "What if this becomes irrelevant in 2 years?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Roadmap ensures evolution."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Client feedback drives updates."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Flexibility protects your investment."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I take advice from a salesperson, not an expert?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because we bring both expertise and proof."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Case studies back claims."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Independent experts support us."
+                    }
+                ]
+            },
+            {
+                "question": "What if market leaders already dominate this space?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Innovation beats size."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Niche focus outperforms generalists."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Clients choose value, not logos."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I trust ROI when cash flow is negative?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because ROI rebuilds cash flow."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Quick wins stabilize finances."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Balanced plans ease pressure."
+                    }
+                ]
+            },
+            {
+                "question": "What if leadership changes mid-project?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "ROI proves continuity."
+                    },
+                    {
+                        "option": "B",
+                        "text": "New leaders get aligned early."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Flexibility adapts goals."
+                    }
+                ]
+            },
+            {
+                "question": "Why not wait for cheaper next-gen tech?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Waiting risks missed ROI."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Next-gen may not deliver."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Early adoption secures advantage."
+                    }
+                ]
+            },
+            {
+                "question": "What if this distracts from our core business?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Efficiency frees focus."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Rollout is low-distraction."
+                    },
+                    {
+                        "option": "C",
+                        "text": "ROI supports your core."
+                    }
+                ]
+            },
+            {
+                "question": "Why invest now if my clients aren't demanding change?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because anticipation wins markets."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Clients don't ask for what they don't know."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Leaders create demand."
+                    }
+                ]
+            },
+            {
+                "question": "What if this exposes weaknesses in our company?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Then we address them together."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Exposure enables improvement."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Stronger systems emerge."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I take the risk if rewards aren't guaranteed?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because risk is minimized with proof."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Shared-risk models align us."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Leaders accept smart risks."
+                    }
+                ]
+            },
+            {
+                "question": "What if this damages relationships with my current vendors?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Co-existence is possible."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Integration avoids conflict."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Many clients manage both."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I pay now if results take years?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Quick wins exist early."
+                    },
+                    {
+                        "option": "B",
+                        "text": "ROI grows over time."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Long-term payoff is stronger."
+                    }
+                ]
+            },
+            {
+                "question": "What if your product requires too much customization?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Flexibility handles customization."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Pre-built modules reduce effort."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Engineers adapt to needs."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I risk my team's morale on change?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because success motivates staff."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Change is managed smoothly."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Support keeps morale high."
+                    }
+                ]
+            },
+            {
+                "question": "What if adoption collides with other projects?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Phased rollout avoids collisions."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Priorities are managed together."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Support aligns timelines."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I invest when competitors are failing?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Strong players expand in downturns."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Survival requires proactive moves."
+                    },
+                    {
+                        "option": "C",
+                        "text": "This secures market share."
+                    }
+                ]
+            },
+            {
+                "question": "What if ROI metrics are impossible to track?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Custom KPIs make them measurable."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Dashboards ensure clarity."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Transparency guarantees visibility."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I bet on you instead of proven giants?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Agility beats size."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Giants can't match personalization."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Innovation outpaces legacy."
+                    }
+                ]
+            },
+            {
+                "question": "What if this causes internal conflict?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Stakeholder alignment prevents it."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Training builds cooperation."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Transparency keeps peace."
+                    }
+                ]
+            },
+            {
+                "question": "Why not wait until my competitors adopt first?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Followers lose advantage."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Leaders set standards."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Early adoption secures position."
+                    }
+                ]
+            },
+            {
+                "question": "What if external consultants advise against this?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Consultants often miss ROI potential."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Independent data proves value."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Many firms succeed despite advice."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I risk investing during layoffs?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Efficiency secures jobs."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Innovation prevents decline."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Bold moves save companies."
+                    }
+                ]
+            },
+            {
+                "question": "What if ROI depends on perfect conditions?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "ROI is proven in varied conditions."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Benchmarks confirm resilience."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Flexibility adapts conditions."
+                    }
+                ]
+            },
+            {
+                "question": "Why invest if savings might be minimal?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Even small savings scale up."
+                    },
+                    {
+                        "option": "B",
+                        "text": "ROI compounds yearly."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Efficiency drives margin growth."
+                    }
+                ]
+            },
+            {
+                "question": "What if this requires constant vendor support?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Support is built-in."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Automation reduces dependency."
+                    },
+                    {
+                        "option": "C",
+                        "text": "SLAs guarantee availability."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I trust innovation during instability?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Innovation drives resilience."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Efficiency stabilizes operations."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Market leaders invest now."
+                    }
+                ]
+            },
+            {
+                "question": "What if staff rejects change entirely?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Training rebuilds acceptance."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Support reduces resistance."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Gradual rollout eases adoption."
+                    }
+                ]
+            },
+            {
+                "question": "Why spend now if market recovery is uncertain?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Efficiency protects in downturns."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Recovery is faster with investment."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Waiting risks falling behind."
+                    }
+                ]
+            },
+            {
+                "question": "What if legal disputes arise from this?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Contracts cover risks."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Legal support is provided."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Transparency prevents disputes."
+                    }
+                ]
+            },
+            {
+                "question": "Why invest when my competitors failed with similar tools?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because our approach differs."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Failures show what to avoid."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Success stories prove the opposite."
+                    }
+                ]
+            },
+            {
+                "question": "What if this drains management time?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Low-touch rollout saves effort."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Our team handles heavy lifting."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Efficiency offsets involvement."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I choose you over in-house solutions?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "In-house costs more long-term."
+                    },
+                    {
+                        "option": "B",
+                        "text": "We bring outside expertise."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Time-to-value is faster."
+                    }
+                ]
+            },
+            {
+                "question": "What if this requires constant upgrades?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Upgrades are included."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Automation keeps it current."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Roadmap ensures future-proofing."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I commit during uncertainty?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Commitment drives stability."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Uncertainty is when leaders act."
+                    },
+                    {
+                        "option": "C",
+                        "text": "ROI reduces unpredictability."
+                    }
+                ]
+            },
+            {
+                "question": "What if employees resist every change?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Incentives build adoption."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Training reduces resistance."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Support eases transition."
+                    }
+                ]
+            },
+            {
+                "question": "Why not wait for clearer ROI evidence?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Pilots give proof now."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Competitors won't wait."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Delay risks lost advantage."
+                    }
+                ]
+            },
+            {
+                "question": "What if this turns out to be a mistake?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Risk-sharing protects you."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Contracts minimize downside."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Lessons still create value."
+                    }
+                ]
+            },
+            {
+                "question": "If I sign today, it's free for months, right?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Not free, but there is an intro discount."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Let me clarify the terms so you're fully informed."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Transparency is key—no hidden tricks."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I listen to you if I already get better prices elsewhere?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Cheaper options exist, but value matters more."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Would you like to compare what you actually receive?"
+                    },
+                    {
+                        "option": "C",
+                        "text": "I respect that—may I share unique benefits?"
+                    }
+                ]
+            },
+            {
+                "question": "Do you really think I have time for this nonsense?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "I'll respect your time and keep it brief."
+                    },
+                    {
+                        "option": "B",
+                        "text": "If now isn't right, when would be better?"
+                    },
+                    {
+                        "option": "C",
+                        "text": "Or I can stop here—it's your choice."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I care about your product at all?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because it solves problems companies like yours face."
+                    },
+                    {
+                        "option": "B",
+                        "text": "It delivers measurable value, not just features."
+                    },
+                    {
+                        "option": "C",
+                        "text": "If it's irrelevant, I'll end the call here."
+                    }
+                ]
+            },
+            {
+                "question": "Why are you such a bad salesperson?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "I'm sorry you feel that way."
+                    },
+                    {
+                        "option": "B",
+                        "text": "My goal is to provide value, not frustration."
+                    },
+                    {
+                        "option": "C",
+                        "text": "I'll respect your feedback and adapt."
+                    }
+                ]
+            },
+            {
+                "question": "If it sounds good, why am I still not interested?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Maybe timing isn't right—that's okay."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Can I ask what's blocking your interest?"
+                    },
+                    {
+                        "option": "C",
+                        "text": "I respect your choice regardless."
+                    }
+                ]
+            },
+            {
+                "question": "How do I know your product even works?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Case studies show proven results."
+                    },
+                    {
+                        "option": "B",
+                        "text": "I can connect you with reference clients."
+                    },
+                    {
+                        "option": "C",
+                        "text": "A pilot program proves it directly."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I help you by buying something?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because it helps you first."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Our role is to solve your challenges."
+                    },
+                    {
+                        "option": "C",
+                        "text": "This isn't about me—it's about your business."
+                    }
+                ]
+            },
+            {
+                "question": "Why don't you know anything about my company?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "You're right—let me listen more."
+                    },
+                    {
+                        "option": "B",
+                        "text": "That's fair—can you share your priorities?"
+                    },
+                    {
+                        "option": "C",
+                        "text": "I want to adapt to your context."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I not just block your number?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "You're free to, but I'd rather respect your time directly."
+                    },
+                    {
+                        "option": "B",
+                        "text": "My goal isn't to bother you—it's to provide value."
+                    },
+                    {
+                        "option": "C",
+                        "text": "If it's not useful, I'll stop here."
+                    }
+                ]
+            },
+            {
+                "question": "Isn't this just a scam?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "I understand your concern—proof is available."
+                    },
+                    {
+                        "option": "B",
+                        "text": "References confirm our credibility."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Transparency clears up doubts."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I trust you if I've never heard of your company?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "That's fair—we're growing and can share case studies."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Clients in your industry trust us."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Let me prove value through results."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I pay when others give it free?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Free often means limited support."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Our paid service ensures reliability."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Value matters more than cost."
+                    }
+                ]
+            },
+            {
+                "question": "Why are you wasting my time?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "I'll stop here if it's not useful."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Can I take 30 seconds to explain value?"
+                    },
+                    {
+                        "option": "C",
+                        "text": "Thank you for telling me directly."
+                    }
+                ]
+            },
+            {
+                "question": "Do you even know what you're talking about?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "I respect your doubt—let me show evidence."
+                    },
+                    {
+                        "option": "B",
+                        "text": "References can confirm credibility."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Data speaks louder than words."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I risk my money on you?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because ROI outweighs risk."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Pilots reduce uncertainty."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Clients trust us with critical roles."
+                    }
+                ]
+            },
+            {
+                "question": "Isn't your competitor better than you?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "They do well too—may I share differences?"
+                    },
+                    {
+                        "option": "B",
+                        "text": "Value is in the details."
+                    },
+                    {
+                        "option": "C",
+                        "text": "I respect comparisons—let's explore them."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I trust your promises?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Every claim is backed by data."
+                    },
+                    {
+                        "option": "B",
+                        "text": "References prove outcomes."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Contracts define deliverables."
+                    }
+                ]
+            },
+            {
+                "question": "What makes you think I care about this?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because it impacts results like yours."
+                    },
+                    {
+                        "option": "B",
+                        "text": "If not, I'll step back."
+                    },
+                    {
+                        "option": "C",
+                        "text": "I respect your honesty."
+                    }
+                ]
+            },
+            {
+                "question": "Why don't you stop bothering people?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "I'll respect your wish."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Thank you for telling me."
+                    },
+                    {
+                        "option": "C",
+                        "text": "I'll step away now."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I trust a cold call?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Trust comes with proof, not just a call."
+                    },
+                    {
+                        "option": "B",
+                        "text": "I can share references."
+                    },
+                    {
+                        "option": "C",
+                        "text": "A short demo shows real value."
+                    }
+                ]
+            },
+            {
+                "question": "What if I regret talking to you?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Then I'll respect that."
+                    },
+                    {
+                        "option": "B",
+                        "text": "My goal is to add value, not regret."
+                    },
+                    {
+                        "option": "C",
+                        "text": "You control the time we spend."
+                    }
+                ]
+            },
+            {
+                "question": "Isn't this just another sales trick?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Transparency matters—I'll be clear."
+                    },
+                    {
+                        "option": "B",
+                        "text": "No tricks, just real value."
+                    },
+                    {
+                        "option": "C",
+                        "text": "I respect your concern."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I buy from a stranger?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because trust is built with proof."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Case studies reduce risk."
+                    },
+                    {
+                        "option": "C",
+                        "text": "We aim for partnership, not transactions."
+                    }
+                ]
+            },
+            {
+                "question": "Don't you feel guilty wasting my time?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "I value your time highly."
+                    },
+                    {
+                        "option": "B",
+                        "text": "That's why I keep it short."
+                    },
+                    {
+                        "option": "C",
+                        "text": "If not useful, I'll end here."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I listen if I'm not interested?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "You don't have to—I respect that."
+                    },
+                    {
+                        "option": "B",
+                        "text": "May I ask one quick question?"
+                    },
+                    {
+                        "option": "C",
+                        "text": "If not, I'll step back."
+                    }
+                ]
+            },
+            {
+                "question": "Isn't your job just to annoy people?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "I see why you'd say that."
+                    },
+                    {
+                        "option": "B",
+                        "text": "My goal is value, not annoyance."
+                    },
+                    {
+                        "option": "C",
+                        "text": "I respect your opinion."
+                    }
+                ]
+            },
+            {
+                "question": "Why do you think you know what I need?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "You're right—I don't until I listen."
+                    },
+                    {
+                        "option": "B",
+                        "text": "That's why I ask questions."
+                    },
+                    {
+                        "option": "C",
+                        "text": "My role is to understand, not assume."
+                    }
+                ]
+            },
+            {
+                "question": "Why can't you just leave me alone?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "I'll respect your wish."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Thank you for being clear."
+                    },
+                    {
+                        "option": "C",
+                        "text": "I'll close this contact."
+                    }
+                ]
+            },
+            {
+                "question": "Isn't your product basically useless?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Some feel that way before seeing results."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Data shows real impact."
+                    },
+                    {
+                        "option": "C",
+                        "text": "I respect your view."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I pay attention if I don't care?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "You shouldn't—unless it benefits you."
+                    },
+                    {
+                        "option": "B",
+                        "text": "May I show one reason it might matter?"
+                    },
+                    {
+                        "option": "C",
+                        "text": "If not, I'll stop here."
+                    }
+                ]
+            },
+            {
+                "question": "Why are you calling during my busy hours?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "I apologize for the timing."
+                    },
+                    {
+                        "option": "B",
+                        "text": "When would be better for you?"
+                    },
+                    {
+                        "option": "C",
+                        "text": "I can follow up at a preferred time."
+                    }
+                ]
+            },
+            {
+                "question": "Why do you think I'd ever buy this?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because it may solve challenges you face."
+                    },
+                    {
+                        "option": "B",
+                        "text": "If not, I respect that."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Let's explore if there's fit."
+                    }
+                ]
+            },
+            {
+                "question": "Why are you even in business?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "To solve client problems."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Because we create measurable impact."
+                    },
+                    {
+                        "option": "C",
+                        "text": "I respect your question—let me explain."
+                    }
+                ]
+            },
+            {
+                "question": "Isn't this just a waste of money?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Not if ROI exceeds cost."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Clients confirm long-term savings."
+                    },
+                    {
+                        "option": "C",
+                        "text": "I respect your concern."
+                    }
+                ]
+            },
+            {
+                "question": "Why don't you stop pushing people?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "I'll respect your wish."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Thank you for the feedback."
+                    },
+                    {
+                        "option": "C",
+                        "text": "I'll step away."
+                    }
+                ]
+            },
+            {
+                "question": "Do you even know what you're selling?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Yes, and I'd like to explain clearly."
+                    },
+                    {
+                        "option": "B",
+                        "text": "If unclear, I'll clarify."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Transparency builds trust."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I pay if I don't see value?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because value is proven in results."
+                    },
+                    {
+                        "option": "B",
+                        "text": "May I show evidence?"
+                    },
+                    {
+                        "option": "C",
+                        "text": "If not, I'll respect your choice."
+                    }
+                ]
+            },
+            {
+                "question": "Why don't you stop calling random people?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "I'll respect your view."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Thank you for saying so."
+                    },
+                    {
+                        "option": "C",
+                        "text": "I'll close this here."
+                    }
+                ]
+            },
+            {
+                "question": "Isn't this whole call pointless?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "It may seem so—unless value is clear."
+                    },
+                    {
+                        "option": "B",
+                        "text": "I'll stop if it feels useless."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Thank you for your honesty."
+                    }
+                ]
+            },
+            {
+                "question": "Why do you sound so scripted?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because I want to stay structured—but I can adapt."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Let's drop the script and talk openly."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Thank you for pointing it out."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I give you any attention?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Only if it benefits you."
+                    },
+                    {
+                        "option": "B",
+                        "text": "May I share one quick fact?"
+                    },
+                    {
+                        "option": "C",
+                        "text": "If not, I'll stop here."
+                    }
+                ]
+            },
+            {
+                "question": "Isn't this just corporate nonsense?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "I understand why it sounds that way."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Let's focus on concrete results."
+                    },
+                    {
+                        "option": "C",
+                        "text": "I respect your concern."
+                    }
+                ]
+            },
+            {
+                "question": "Why do you think I'd waste money on you?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because ROI outweighs cost."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Clients confirm the value."
+                    },
+                    {
+                        "option": "C",
+                        "text": "I respect your choice if not."
+                    }
+                ]
+            },
+            {
+                "question": "Why can't you stop pushing?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "I'll respect your request."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Thank you for being direct."
+                    },
+                    {
+                        "option": "C",
+                        "text": "I'll step away now."
+                    }
+                ]
+            },
+            {
+                "question": "Isn't this just manipulation?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "I see why you'd think that."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Transparency is key—no tricks."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Proof shows the truth."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I care if this helps others?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because it helps your company too."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Impact is tailored to you."
+                    },
+                    {
+                        "option": "C",
+                        "text": "If not, I won't insist."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I listen if nothing will change?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Change happens with the right tools."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Let me share proof of impact."
+                    },
+                    {
+                        "option": "C",
+                        "text": "If not, I respect your view."
+                    }
+                ]
+            },
+            {
+                "question": "Why don't you accept no for an answer?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "I'll respect your no right now."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Thank you for being clear."
+                    },
+                    {
+                        "option": "C",
+                        "text": "I'll stop here."
+                    }
+                ]
+            },
+            {
+                "question": "Why should I trust anything you say?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Because proof and references back me."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Data confirms results."
+                    },
+                    {
+                        "option": "C",
+                        "text": "I respect your skepticism."
+                    }
+                ]
+            }
+        ]
+    }
+]
