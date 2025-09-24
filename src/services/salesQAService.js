@@ -16,6 +16,12 @@ class SalesQAService {
       const cleanQuery = this.normalizeQuery(query);
       console.log('🔍 Searching for:', cleanQuery);
       
+      // Skip matching for very short queries or casual conversation
+      if (cleanQuery.length < 10 || this.isCasualConversation(cleanQuery)) {
+        console.log('⏭️ Skipping match for casual conversation or short query:', cleanQuery);
+        return null;
+      }
+      
       // First try exact match
       let match = await this.exactMatch(cleanQuery);
       if (match) {
@@ -159,7 +165,7 @@ class SalesQAService {
             }
           }
 
-          if (bestQuestion && bestScore > 0.2) { // Lower threshold for better matching
+          if (bestQuestion && bestScore > 0.5) { // Higher threshold to prevent false positives
             return {
               question: bestQuestion.question,
               answers: bestQuestion.answers,
@@ -181,8 +187,20 @@ class SalesQAService {
    * Calculate similarity between two strings
    */
   calculateSimilarity(str1, str2) {
-    const words1 = str1.toLowerCase().split(' ');
-    const words2 = str2.toLowerCase().split(' ');
+    // Filter out common words that don't add semantic meaning
+    const commonWords = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'you', 'i', 'me', 'my', 'we', 'us', 'our', 'they', 'them', 'their', 'this', 'that', 'these', 'those', 'hello', 'hi', 'how', 'are', 'listening', 'talking'];
+    
+    const words1 = str1.toLowerCase().split(' ').filter(word => 
+      word.length > 2 && !commonWords.includes(word)
+    );
+    const words2 = str2.toLowerCase().split(' ').filter(word => 
+      word.length > 2 && !commonWords.includes(word)
+    );
+    
+    // If no meaningful words left after filtering, return 0
+    if (words1.length === 0 || words2.length === 0) {
+      return 0;
+    }
     
     const intersection = words1.filter(word => words2.includes(word));
     const union = [...new Set([...words1, ...words2])];
@@ -195,6 +213,21 @@ class SalesQAService {
    */
   escapeRegex(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  /**
+   * Check if query is casual conversation that shouldn't be matched
+   */
+  isCasualConversation(query) {
+    const casualPatterns = [
+      /^(hello|hi|hey)\s+(how\s+are\s+you|are\s+you\s+listening|are\s+you\s+talking)/i,
+      /^(how\s+are\s+you|are\s+you\s+listening|are\s+you\s+talking)/i,
+      /^(good\s+morning|good\s+afternoon|good\s+evening)/i,
+      /^(thank\s+you|thanks|bye|goodbye)/i,
+      /^(yes|no|ok|okay|sure|alright)/i
+    ];
+    
+    return casualPatterns.some(pattern => pattern.test(query));
   }
 
   /**
@@ -255,6 +288,46 @@ class SalesQAService {
     } catch (error) {
       console.error('Error getting question count:', error);
       return 0;
+    }
+  }
+
+  /**
+   * Find matching questions for multiple queries
+   * @param {Array<string>} queries - Array of user questions
+   * @returns {Array<Object>} - Array of matching questions with answers
+   */
+  async findMultipleMatchingQuestions(queries) {
+    try {
+      if (!Array.isArray(queries) || queries.length === 0) {
+        return [];
+      }
+
+      console.log('🔍 Searching for multiple questions:', queries);
+      const matches = [];
+
+      for (const query of queries) {
+        if (query && typeof query === 'string' && query.trim().length > 0) {
+          const match = await this.findMatchingQuestion(query.trim());
+          if (match) {
+            matches.push({
+              originalQuery: query.trim(),
+              matchedQuestion: match.question,
+              answers: match.answers,
+              category: match.category,
+              description: match.description
+            });
+            console.log(`✅ Found match for: "${query.trim()}" -> "${match.question}"`);
+          } else {
+            console.log(`❌ No match found for: "${query.trim()}"`);
+          }
+        }
+      }
+
+      console.log(`🎯 Total matches found: ${matches.length}/${queries.length}`);
+      return matches;
+    } catch (error) {
+      console.error('Error in findMultipleMatchingQuestions:', error);
+      return [];
     }
   }
 }

@@ -22,6 +22,85 @@ function extractUserQuestion(transcript) {
   return transcript;
 }
 
+// --- Helper function to parse multiple questions from user input ---
+function parseMultipleQuestions(userInput) {
+  if (!userInput || typeof userInput !== 'string') {
+    return [userInput];
+  }
+
+  const questions = [];
+  const input = userInput.trim();
+  
+  // If input is very short, don't try to split it
+  if (input.length < 30) {
+    return [input];
+  }
+  
+  // Common question separators in Urdu/English (more conservative)
+  const separators = [
+    /\?\s+(?=[A-Z])/g,           // Question mark followed by capital letter
+    /\.\s+(?=[A-Z])/g,           // Period followed by capital letter
+    /and\s+(?=[A-Z])/gi,         // "and" followed by capital letter
+    /aur\s+(?=[A-Z])/gi,         // "aur" followed by capital letter
+    /;\s+/g                      // Semicolon
+  ];
+
+  let currentInput = input;
+  let foundSeparator = false;
+
+  // Try each separator
+  for (const separator of separators) {
+    const matches = currentInput.split(separator);
+    if (matches.length > 1) {
+      // Only split if each part is a meaningful question
+      const validQuestions = matches.filter(match => {
+        const trimmed = match.trim();
+        return trimmed.length > 15 && (trimmed.includes('?') || trimmed.length > 25);
+      });
+      
+      if (validQuestions.length > 1) {
+        questions.push(...validQuestions);
+        foundSeparator = true;
+        break;
+      }
+    }
+  }
+
+  // If no separator found, check for multiple question words
+  if (!foundSeparator) {
+    const questionWords = ['what', 'how', 'why', 'when', 'where', 'who', 'kya', 'kaise', 'kyun', 'kab', 'kahan', 'kaun'];
+    const questionCount = questionWords.reduce((count, word) => {
+      const regex = new RegExp(`\\b${word}\\b`, 'gi');
+      return count + (input.match(regex) || []).length;
+    }, 0);
+
+    // Only split if we have multiple complete questions (not fragments)
+    if (questionCount > 1) {
+      // Look for complete question patterns, not just question words
+      const completeQuestionPattern = /(?:what|how|why|when|where|who|kya|kaise|kyun|kab|kahan|kaun)[^.!?]*(?:[.!?]|$)/gi;
+      const matches = input.match(completeQuestionPattern);
+      
+      if (matches && matches.length > 1) {
+        // Only add questions that are complete and meaningful
+        matches.forEach(match => {
+          const trimmed = match.trim();
+          if (trimmed.length > 15 && trimmed.endsWith('?') || trimmed.length > 20) {
+            questions.push(trimmed);
+          }
+        });
+      }
+    }
+  }
+
+  // If still no multiple questions found, return single question
+  if (questions.length === 0) {
+    questions.push(input);
+  }
+
+  console.log(`🔍 Parsed ${questions.length} question(s):`, questions);
+  return questions;
+}
+
 // --- Decode Base64 Google Key (if provided) ---
 if (process.env.GOOGLE_CLOUD_KEY_BASE64) {
   try {
@@ -178,37 +257,50 @@ router.post("/gpt", async (req, res) => {
 
     // For sales mode, first search MongoDB for matching questions
     if (mode === "sales") {
-      console.log("🔍 Searching for matching question in sales database...");
+      console.log("🔍 Searching for matching questions in sales database...");
       
       // Extract just the user's question from the frontend's prompt
       const userQuestion = extractUserQuestion(transcript);
       console.log("🎯 Extracted user question:", userQuestion);
       
-      matchedQuestion = await salesQAService.findMatchingQuestion(userQuestion);
+      // Parse multiple questions from user input
+      const questions = parseMultipleQuestions(userQuestion);
+      console.log("🔍 Parsed questions:", questions);
       
-      if (matchedQuestion) {
-        console.log("✅ Found matching question:", matchedQuestion.question);
+      // Search for matches for all questions
+      const matchedQuestions = await salesQAService.findMultipleMatchingQuestions(questions);
+      
+      if (matchedQuestions.length > 0) {
+        console.log(`✅ Found ${matchedQuestions.length} matching question(s):`, matchedQuestions.map(m => m.matchedQuestion));
         
-        // Create a prompt for GPT to analyze the 3 responses and return them in a specific format
-        const systemPrompt = `You are a professional sales assistant. You have been given a customer question and 3 possible responses (A, B, C). 
-        Your task is to analyze the customer's question and return the 3 responses in the following format:
+        // Create a comprehensive prompt for GPT to analyze all matches
+        const systemPrompt = `You are a professional sales assistant. You have been given customer questions and their matching responses from the database. 
+        Your task is to analyze all the questions and return the best responses in the following format:
         
+        For each question, provide the 3 responses in this format:
+        Question 1: [original question]
         Response A: [first response]
         Response B: [second response] 
         Response C: [third response]
         
-        Return ONLY the 3 responses in this exact format without any additional explanation or formatting.`;
-
-        const userPrompt = `Customer Question: "${transcript}"
+        Question 2: [original question]
+        Response A: [first response]
+        Response B: [second response] 
+        Response C: [third response]
         
-Matched Question: "${matchedQuestion.question}"
+        Continue this pattern for all questions. Return ONLY the responses in this exact format without any additional explanation.`;
 
-Available Responses:
-A) ${matchedQuestion.answers[0].text}
-B) ${matchedQuestion.answers[1].text}
-C) ${matchedQuestion.answers[2].text}
+        let userPrompt = `Customer Questions: "${transcript}"\n\n`;
+        
+        matchedQuestions.forEach((match, index) => {
+          userPrompt += `Matched Question ${index + 1}: "${match.matchedQuestion}"\n`;
+          userPrompt += `Available Responses:\n`;
+          userPrompt += `A) ${match.answers[0].text}\n`;
+          userPrompt += `B) ${match.answers[1].text}\n`;
+          userPrompt += `C) ${match.answers[2].text}\n\n`;
+        });
 
-Return the 3 responses in the specified format:`;
+        userPrompt += `Return the responses in the specified format for all ${matchedQuestions.length} question(s):`;
 
         try {
           const completion = await openai.chat.completions.create({
@@ -217,16 +309,18 @@ Return the 3 responses in the specified format:`;
               { role: "system", content: systemPrompt },
               { role: "user", content: userPrompt }
             ],
-            max_tokens: 300,
-            temperature: 0.3, // Lower temperature for more consistent selection
+            max_tokens: 500, // Increased for multiple questions
+            temperature: 0.3,
           });
 
           responseText = completion.choices[0].message.content.trim();
-          console.log("🤖 GPT analyzed and returned 3 responses:", responseText);
+          console.log("🤖 GPT analyzed and returned responses for multiple questions:", responseText);
         } catch (gptError) {
           console.error('GPT Error in sales mode:', gptError);
-          // Fallback to returning the 3 original responses
-          responseText = `Response A: ${matchedQuestion.answers[0].text}\nResponse B: ${matchedQuestion.answers[1].text}\nResponse C: ${matchedQuestion.answers[2].text}`;
+          // Fallback to returning all responses
+          responseText = matchedQuestions.map((match, index) => {
+            return `Question ${index + 1}: ${match.originalQuery}\nResponse A: ${match.answers[0].text}\nResponse B: ${match.answers[1].text}\nResponse C: ${match.answers[2].text}`;
+          }).join('\n\n');
         }
       } else {
         // No matching question found, use general sales response
@@ -408,37 +502,50 @@ router.post("/pipeline", upload.single("audio"), async (req, res) => {
 
       // For sales mode, first search MongoDB for matching questions
       if (mode === "sales") {
-        console.log("🔍 SERVER: Searching for matching question in sales database...");
+        console.log("🔍 SERVER: Searching for matching questions in sales database...");
         
         // Extract just the user's question from the frontend's prompt
         const userQuestion = extractUserQuestion(transcript);
         console.log("🎯 SERVER: Extracted user question:", userQuestion);
         
-        matchedQuestion = await salesQAService.findMatchingQuestion(userQuestion);
+        // Parse multiple questions from user input
+        const questions = parseMultipleQuestions(userQuestion);
+        console.log("🔍 SERVER: Parsed questions:", questions);
         
-        if (matchedQuestion) {
-          console.log("✅ SERVER: Found matching question:", matchedQuestion.question);
+        // Search for matches for all questions
+        const matchedQuestions = await salesQAService.findMultipleMatchingQuestions(questions);
+        
+        if (matchedQuestions.length > 0) {
+          console.log(`✅ SERVER: Found ${matchedQuestions.length} matching question(s):`, matchedQuestions.map(m => m.matchedQuestion));
           
-          // Create a prompt for GPT to analyze the 3 responses and return them in a specific format
-          const systemPrompt = `You are a professional sales assistant. You have been given a customer question and 3 possible responses (A, B, C). 
-          Your task is to analyze the customer's question and return the 3 responses in the following format:
+          // Create a comprehensive prompt for GPT to analyze all matches
+          const systemPrompt = `You are a professional sales assistant. You have been given customer questions and their matching responses from the database. 
+          Your task is to analyze all the questions and return the best responses in the following format:
           
+          For each question, provide the 3 responses in this format:
+          Question 1: [original question]
           Response A: [first response]
           Response B: [second response] 
           Response C: [third response]
           
-          Return ONLY the 3 responses in this exact format without any additional explanation or formatting.`;
-
-          const userPrompt = `Customer Question: "${transcript}"
+          Question 2: [original question]
+          Response A: [first response]
+          Response B: [second response] 
+          Response C: [third response]
           
-Matched Question: "${matchedQuestion.question}"
+          Continue this pattern for all questions. Return ONLY the responses in this exact format without any additional explanation.`;
 
-Available Responses:
-A) ${matchedQuestion.answers[0].text}
-B) ${matchedQuestion.answers[1].text}
-C) ${matchedQuestion.answers[2].text}
+          let userPrompt = `Customer Questions: "${transcript}"\n\n`;
+          
+          matchedQuestions.forEach((match, index) => {
+            userPrompt += `Matched Question ${index + 1}: "${match.matchedQuestion}"\n`;
+            userPrompt += `Available Responses:\n`;
+            userPrompt += `A) ${match.answers[0].text}\n`;
+            userPrompt += `B) ${match.answers[1].text}\n`;
+            userPrompt += `C) ${match.answers[2].text}\n\n`;
+          });
 
-Return the 3 responses in the specified format:`;
+          userPrompt += `Return the responses in the specified format for all ${matchedQuestions.length} question(s):`;
 
           try {
             const completion = await openai.chat.completions.create({
@@ -447,16 +554,18 @@ Return the 3 responses in the specified format:`;
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userPrompt }
               ],
-              max_tokens: 300,
-              temperature: 0.3, // Lower temperature for more consistent selection
+              max_tokens: 500, // Increased for multiple questions
+              temperature: 0.3,
             });
 
             responseText = completion.choices[0].message.content.trim();
-            console.log("🤖 SERVER: GPT analyzed and returned 3 responses:", responseText);
+            console.log("🤖 SERVER: GPT analyzed and returned responses for multiple questions:", responseText);
           } catch (gptError) {
             console.error('❌ SERVER: GPT Error in sales mode:', gptError);
-            // Fallback to returning the 3 original responses
-            responseText = `Response A: ${matchedQuestion.answers[0].text}\nResponse B: ${matchedQuestion.answers[1].text}\nResponse C: ${matchedQuestion.answers[2].text}`;
+            // Fallback to returning all responses
+            responseText = matchedQuestions.map((match, index) => {
+              return `Question ${index + 1}: ${match.originalQuery}\nResponse A: ${match.answers[0].text}\nResponse B: ${match.answers[1].text}\nResponse C: ${match.answers[2].text}`;
+            }).join('\n\n');
           }
         } else {
           // No matching question found, use general sales response
