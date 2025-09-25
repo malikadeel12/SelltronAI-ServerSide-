@@ -273,60 +273,17 @@ router.post("/gpt", async (req, res) => {
       if (matchedQuestions.length > 0) {
         console.log(`✅ Found ${matchedQuestions.length} matching question(s):`, matchedQuestions.map(m => m.matchedQuestion));
         
-        // Create a comprehensive prompt for GPT to analyze all matches
-        const systemPrompt = `You are a professional sales assistant. You have been given customer questions and their matching responses from the database. 
-        Your task is to analyze all the questions and return the best responses in the following format:
-        
-        For each question, provide the 3 responses in this format:
-        Question 1: [original question]
-        Response A: [first response]
-        Response B: [second response] 
-        Response C: [third response]
-        
-        Question 2: [original question]
-        Response A: [first response]
-        Response B: [second response] 
-        Response C: [third response]
-        
-        Continue this pattern for all questions. Return ONLY the responses in this exact format without any additional explanation.`;
-
-        let userPrompt = `Customer Questions: "${transcript}"\n\n`;
-        
-        matchedQuestions.forEach((match, index) => {
-          userPrompt += `Matched Question ${index + 1}: "${match.matchedQuestion}"\n`;
-          userPrompt += `Available Responses:\n`;
-          userPrompt += `A) ${match.answers[0].text}\n`;
-          userPrompt += `B) ${match.answers[1].text}\n`;
-          userPrompt += `C) ${match.answers[2].text}\n\n`;
-        });
-
-        userPrompt += `Return the responses in the specified format for all ${matchedQuestions.length} question(s):`;
-
-        try {
-          const completion = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: userPrompt }
-            ],
-            max_tokens: 500, // Increased for multiple questions
-            temperature: 0.3,
-          });
-
-          responseText = completion.choices[0].message.content.trim();
-          console.log("🤖 GPT analyzed and returned responses for multiple questions:", responseText);
-        } catch (gptError) {
-          console.error('GPT Error in sales mode:', gptError);
-          // Fallback to returning all responses
-          responseText = matchedQuestions.map((match, index) => {
-            return `Question ${index + 1}: ${match.originalQuery}\nResponse A: ${match.answers[0].text}\nResponse B: ${match.answers[1].text}\nResponse C: ${match.answers[2].text}`;
-          }).join('\n\n');
-        }
+        // Skip GPT call and use database responses directly for faster response
+        console.log("⚡ Using direct database responses for faster processing");
+        responseText = matchedQuestions.map((match, index) => {
+          return `Response A: ${match.answers[0].text}\nResponse B: ${match.answers[1].text}\nResponse C: ${match.answers[2].text}`;
+        }).join('\n\n');
+        console.log("🎯 Direct database response generated:", responseText);
       } else {
         // No matching question found, use general sales response
         console.log("❌ No matching question found, using general sales response");
-        const systemPrompt = "You are a professional sales assistant. Be persuasive, knowledgeable about products, and help close deals while being helpful and friendly.";
-        const userPrompt = `Customer said: "${transcript}". Please provide a helpful response that addresses their needs. Keep it concise and professional.`;
+        const systemPrompt = "You are a sales assistant. Be persuasive and helpful. Keep responses short.";
+        const userPrompt = `Customer: "${transcript}". Give 3 short sales responses (A, B, C format).`;
 
         const completion = await openai.chat.completions.create({
           model: "gpt-3.5-turbo",
@@ -518,60 +475,17 @@ router.post("/pipeline", upload.single("audio"), async (req, res) => {
         if (matchedQuestions.length > 0) {
           console.log(`✅ SERVER: Found ${matchedQuestions.length} matching question(s):`, matchedQuestions.map(m => m.matchedQuestion));
           
-          // Create a comprehensive prompt for GPT to analyze all matches
-          const systemPrompt = `You are a professional sales assistant. You have been given customer questions and their matching responses from the database. 
-          Your task is to analyze all the questions and return the best responses in the following format:
-          
-          For each question, provide the 3 responses in this format:
-          Question 1: [original question]
-          Response A: [first response]
-          Response B: [second response] 
-          Response C: [third response]
-          
-          Question 2: [original question]
-          Response A: [first response]
-          Response B: [second response] 
-          Response C: [third response]
-          
-          Continue this pattern for all questions. Return ONLY the responses in this exact format without any additional explanation.`;
-
-          let userPrompt = `Customer Questions: "${transcript}"\n\n`;
-          
-          matchedQuestions.forEach((match, index) => {
-            userPrompt += `Matched Question ${index + 1}: "${match.matchedQuestion}"\n`;
-            userPrompt += `Available Responses:\n`;
-            userPrompt += `A) ${match.answers[0].text}\n`;
-            userPrompt += `B) ${match.answers[1].text}\n`;
-            userPrompt += `C) ${match.answers[2].text}\n\n`;
-          });
-
-          userPrompt += `Return the responses in the specified format for all ${matchedQuestions.length} question(s):`;
-
-          try {
-            const completion = await openai.chat.completions.create({
-              model: "gpt-3.5-turbo",
-              messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: userPrompt }
-              ],
-              max_tokens: 500, // Increased for multiple questions
-              temperature: 0.3,
-            });
-
-            responseText = completion.choices[0].message.content.trim();
-            console.log("🤖 SERVER: GPT analyzed and returned responses for multiple questions:", responseText);
-          } catch (gptError) {
-            console.error('❌ SERVER: GPT Error in sales mode:', gptError);
-            // Fallback to returning all responses
-            responseText = matchedQuestions.map((match, index) => {
-              return `Question ${index + 1}: ${match.originalQuery}\nResponse A: ${match.answers[0].text}\nResponse B: ${match.answers[1].text}\nResponse C: ${match.answers[2].text}`;
-            }).join('\n\n');
-          }
+          // Skip GPT call and use database responses directly for faster response
+          console.log("⚡ SERVER: Using direct database responses for faster processing");
+          responseText = matchedQuestions.map((match, index) => {
+            return `Response A: ${match.answers[0].text}\nResponse B: ${match.answers[1].text}\nResponse C: ${match.answers[2].text}`;
+          }).join('\n\n');
+          console.log("🎯 SERVER: Direct database response generated:", responseText);
         } else {
           // No matching question found, use general sales response
           console.log("❌ SERVER: No matching question found, using general sales response");
-          const systemPrompt = "You are a professional sales assistant. Be persuasive and help close deals while being helpful.";
-          const userPrompt = `Customer said: "${transcript}". Please provide a helpful response. Keep it concise and professional.`;
+          const systemPrompt = "You are a sales assistant. Be persuasive and helpful. Keep responses short.";
+          const userPrompt = `Customer: "${transcript}". Give 3 short sales responses (A, B, C format).`;
 
           const completion = await openai.chat.completions.create({
             model: "gpt-3.5-turbo",
