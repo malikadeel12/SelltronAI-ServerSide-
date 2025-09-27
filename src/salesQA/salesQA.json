@@ -1,5 +1,96 @@
 [
     {
+        "category": "Basic Sales Questions",
+        "description": "Fundamental questions about sales, selling, and sales processes.",
+        "questions": [
+            {
+                "question": "What is sales?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Sales is the process of identifying customer needs and providing solutions that create value."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Sales is about building relationships and helping customers achieve their goals."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Sales is the art of persuading people to buy products or services that benefit them."
+                    }
+                ]
+            },
+            {
+                "question": "What is selling?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Selling is the process of presenting your product's benefits to potential customers."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Selling is about understanding customer problems and offering the right solution."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Selling is the skill of convincing people that your offer is the best choice."
+                    }
+                ]
+            },
+            {
+                "question": "What is a sale?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "A sale is when a customer agrees to purchase your product or service."
+                    },
+                    {
+                        "option": "B",
+                        "text": "A sale is the successful completion of a sales process that benefits both parties."
+                    },
+                    {
+                        "option": "C",
+                        "text": "A sale is the exchange of value between a seller and a buyer."
+                    }
+                ]
+            },
+            {
+                "question": "What is the sales process?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "The sales process is a systematic approach to finding and converting prospects into customers."
+                    },
+                    {
+                        "option": "B",
+                        "text": "The sales process includes prospecting, qualifying, presenting, and closing deals."
+                    },
+                    {
+                        "option": "C",
+                        "text": "The sales process is the journey from initial contact to final purchase."
+                    }
+                ]
+            },
+            {
+                "question": "What is sales training?",
+                "answers": [
+                    {
+                        "option": "A",
+                        "text": "Sales training teaches you how to identify customer needs and present solutions effectively."
+                    },
+                    {
+                        "option": "B",
+                        "text": "Sales training helps you develop skills in communication, persuasion, and relationship building."
+                    },
+                    {
+                        "option": "C",
+                        "text": "Sales training provides techniques and strategies to increase your closing rate and revenue."
+                    }
+                ]
+            }
+        ]
+    },
+    {
         "category": "Destroying Questions",
         "description": "The most complex, tough-to-handle questions in sales.",
         "questions": [

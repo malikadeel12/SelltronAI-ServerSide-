@@ -40,9 +40,10 @@ function parseMultipleQuestions(userInput) {
   const separators = [
     /\?\s+(?=[A-Z])/g,           // Question mark followed by capital letter
     /\.\s+(?=[A-Z])/g,           // Period followed by capital letter
-    /and\s+(?=[A-Z])/gi,         // "and" followed by capital letter
-    /aur\s+(?=[A-Z])/gi,         // "aur" followed by capital letter
-    /;\s+/g                      // Semicolon
+    /\sand\s+(?=[A-Z])/gi,       // "and" followed by capital letter
+    /\saur\s+(?=[A-Z])/gi,       // "aur" followed by capital letter
+    /;\s+/g,                     // Semicolon
+    /\sand\s+(?=why|what|how|when|where|who|can|do|will|would|should)/gi  // "and" followed by question words
   ];
 
   let currentInput = input;
@@ -55,7 +56,7 @@ function parseMultipleQuestions(userInput) {
       // Only split if each part is a meaningful question
       const validQuestions = matches.filter(match => {
         const trimmed = match.trim();
-        return trimmed.length > 15 && (trimmed.includes('?') || trimmed.length > 25);
+        return trimmed.length > 10 && (trimmed.includes('?') || trimmed.length > 20);
       });
       
       if (validQuestions.length > 1) {
@@ -68,7 +69,7 @@ function parseMultipleQuestions(userInput) {
 
   // If no separator found, check for multiple question words
   if (!foundSeparator) {
-    const questionWords = ['what', 'how', 'why', 'when', 'where', 'who', 'kya', 'kaise', 'kyun', 'kab', 'kahan', 'kaun'];
+    const questionWords = ['what', 'how', 'why', 'when', 'where', 'who', 'can', 'do', 'will', 'would', 'should', 'kya', 'kaise', 'kyun', 'kab', 'kahan', 'kaun'];
     const questionCount = questionWords.reduce((count, word) => {
       const regex = new RegExp(`\\b${word}\\b`, 'gi');
       return count + (input.match(regex) || []).length;
@@ -77,7 +78,7 @@ function parseMultipleQuestions(userInput) {
     // Only split if we have multiple complete questions (not fragments)
     if (questionCount > 1) {
       // Look for complete question patterns, not just question words
-      const completeQuestionPattern = /(?:what|how|why|when|where|who|kya|kaise|kyun|kab|kahan|kaun)[^.!?]*(?:[.!?]|$)/gi;
+      const completeQuestionPattern = /(?:what|how|why|when|where|who|can|do|will|would|should|kya|kaise|kyun|kab|kahan|kaun)[^.!?]*(?:[.!?]|$)/gi;
       const matches = input.match(completeQuestionPattern);
       
       if (matches && matches.length > 1) {
@@ -185,6 +186,20 @@ router.get("/salesqa/stats", async (req, res) => {
   }
 });
 
+// --- Clear Sales Q&A Cache ---
+router.post("/salesqa/clear-cache", async (req, res) => {
+  try {
+    salesQAService.clearAllCache();
+    return res.json({ 
+      message: "Cache cleared successfully",
+      success: true 
+    });
+  } catch (error) {
+    console.error('Clear Cache Error:', error);
+    return res.status(500).json({ error: "Failed to clear cache" });
+  }
+});
+
 // --- Step 1: STT (Real Google Cloud Speech-to-Text) ---
 router.post("/stt", upload.single("audio"), async (req, res) => {
   try {
@@ -268,7 +283,31 @@ router.post("/gpt", async (req, res) => {
       console.log("🔍 Parsed questions:", questions);
       
       // Search for matches for all questions
-      const matchedQuestions = await salesQAService.findMultipleMatchingQuestions(questions);
+      // First try normal search, if no good matches, try force search
+      let matchedQuestions = await salesQAService.findMultipleMatchingQuestions(questions);
+      
+      // If no matches or low quality matches, try force search
+      if (matchedQuestions.length === 0 || (matchedQuestions[0] && matchedQuestions[0].similarity < 0.6)) {
+        console.log('🔄 No good matches found, trying force search...');
+        const forceMatches = [];
+        for (const query of questions) {
+          const forceMatch = await salesQAService.findMatchingQuestionForce(query.trim());
+          if (forceMatch) {
+            forceMatches.push({
+              originalQuery: query.trim(),
+              matchedQuestion: forceMatch.question,
+              answers: forceMatch.answers,
+              category: forceMatch.category,
+              description: forceMatch.description,
+              similarity: forceMatch.similarity || 0
+            });
+          }
+        }
+        if (forceMatches.length > 0) {
+          matchedQuestions = forceMatches;
+          console.log(`🎯 Force search found ${forceMatches.length} better matches`);
+        }
+      }
       
       if (matchedQuestions.length > 0) {
         console.log(`✅ Found ${matchedQuestions.length} matching question(s):`, matchedQuestions.map(m => m.matchedQuestion));
@@ -280,22 +319,59 @@ router.post("/gpt", async (req, res) => {
         }).join('\n\n');
         console.log("🎯 Direct database response generated:", responseText);
       } else {
-        // No matching question found, use general sales response
-        console.log("❌ No matching question found, using general sales response");
-        const systemPrompt = "You are a sales assistant. Be persuasive and helpful. Keep responses short.";
-        const userPrompt = `Customer: "${transcript}". Give 3 short sales responses (A, B, C format).`;
+        // No matching question found, find related questions for GPT context
+        console.log("❌ No matching question found, finding related questions for GPT analysis");
+        
+        // Extract user question for related search
+        const userQuestion = extractUserQuestion(transcript);
+        const relatedQuestions = await salesQAService.findRelatedQuestionsForGPT(userQuestion);
+        
+        if (relatedQuestions.length > 0) {
+          console.log(`🎯 Found ${relatedQuestions.length} related questions for GPT context`);
+          
+          // Create enhanced context from related questions
+          const contextQuestions = relatedQuestions.map((q, index) => 
+            `Example ${index + 1}:\nQ: ${q.question}\nA: ${q.answers[0].text}\nB: ${q.answers[1].text}\nC: ${q.answers[2].text}\nCategory: ${q.category}`
+          ).join('\n\n');
+          
+          const systemPrompt = `You are an expert sales assistant. You have access to a database of proven sales responses. 
+          Here are some related sales scenarios and their successful responses:
+          ${contextQuestions}
+          
+          Your task: Analyze the customer's question and provide 3 persuasive sales responses (A, B, C format) that are relevant to their specific concern. Use the context above to understand the sales approach and tone.`;
+          
+          const userPrompt = `Customer asked: "${userQuestion}". 
+          Based on the sales context above, provide 3 short, persuasive sales responses (A, B, C format) that directly address their question. Make sure each response is different and covers different angles of persuasion.`;
 
-        const completion = await openai.chat.completions.create({
-          model: "gpt-3.5-turbo",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt }
-          ],
-          max_tokens: 200,
-          temperature: 0.7,
-        });
+          const completion = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt }
+            ],
+            max_tokens: 250,
+            temperature: 0.8,
+          });
 
-        responseText = completion.choices[0].message.content;
+          responseText = completion.choices[0].message.content;
+        } else {
+          // No related questions found, use general sales response
+          console.log("❌ No related questions found, using general sales response");
+          const systemPrompt = "You are a sales assistant. Be persuasive and helpful. Keep responses short.";
+          const userPrompt = `Customer: "${transcript}". Give 3 short sales responses (A, B, C format).`;
+
+          const completion = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt }
+            ],
+            max_tokens: 200,
+            temperature: 0.7,
+          });
+
+          responseText = completion.choices[0].message.content;
+        }
       }
     } else {
       // For support mode, use original logic
@@ -470,7 +546,31 @@ router.post("/pipeline", upload.single("audio"), async (req, res) => {
         console.log("🔍 SERVER: Parsed questions:", questions);
         
         // Search for matches for all questions
-        const matchedQuestions = await salesQAService.findMultipleMatchingQuestions(questions);
+        // First try normal search, if no good matches, try force search
+        let matchedQuestions = await salesQAService.findMultipleMatchingQuestions(questions);
+        
+        // If no matches or low quality matches, try force search
+        if (matchedQuestions.length === 0 || (matchedQuestions[0] && matchedQuestions[0].similarity < 0.6)) {
+          console.log('🔄 No good matches found, trying force search...');
+          const forceMatches = [];
+          for (const query of questions) {
+            const forceMatch = await salesQAService.findMatchingQuestionForce(query.trim());
+            if (forceMatch) {
+              forceMatches.push({
+                originalQuery: query.trim(),
+                matchedQuestion: forceMatch.question,
+                answers: forceMatch.answers,
+                category: forceMatch.category,
+                description: forceMatch.description,
+                similarity: forceMatch.similarity || 0
+              });
+            }
+          }
+          if (forceMatches.length > 0) {
+            matchedQuestions = forceMatches;
+            console.log(`🎯 Force search found ${forceMatches.length} better matches`);
+          }
+        }
         
         if (matchedQuestions.length > 0) {
           console.log(`✅ SERVER: Found ${matchedQuestions.length} matching question(s):`, matchedQuestions.map(m => m.matchedQuestion));
@@ -482,22 +582,59 @@ router.post("/pipeline", upload.single("audio"), async (req, res) => {
           }).join('\n\n');
           console.log("🎯 SERVER: Direct database response generated:", responseText);
         } else {
-          // No matching question found, use general sales response
-          console.log("❌ SERVER: No matching question found, using general sales response");
-          const systemPrompt = "You are a sales assistant. Be persuasive and helpful. Keep responses short.";
-          const userPrompt = `Customer: "${transcript}". Give 3 short sales responses (A, B, C format).`;
+          // No matching question found, find related questions for GPT context
+          console.log("❌ SERVER: No matching question found, finding related questions for GPT analysis");
+          
+          // Extract user question for related search
+          const userQuestion = extractUserQuestion(transcript);
+          const relatedQuestions = await salesQAService.findRelatedQuestionsForGPT(userQuestion);
+          
+          if (relatedQuestions.length > 0) {
+            console.log(`🎯 SERVER: Found ${relatedQuestions.length} related questions for GPT context`);
+            
+            // Create enhanced context from related questions
+            const contextQuestions = relatedQuestions.map((q, index) => 
+              `Example ${index + 1}:\nQ: ${q.question}\nA: ${q.answers[0].text}\nB: ${q.answers[1].text}\nC: ${q.answers[2].text}\nCategory: ${q.category}`
+            ).join('\n\n');
+            
+            const systemPrompt = `You are an expert sales assistant. You have access to a database of proven sales responses. 
+            Here are some related sales scenarios and their successful responses:
+            ${contextQuestions}
+            
+            Your task: Analyze the customer's question and provide 3 persuasive sales responses (A, B, C format) that are relevant to their specific concern. Use the context above to understand the sales approach and tone.`;
+            
+            const userPrompt = `Customer asked: "${userQuestion}". 
+            Based on the sales context above, provide 3 short, persuasive sales responses (A, B, C format) that directly address their question. Make sure each response is different and covers different angles of persuasion.`;
 
-          const completion = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: userPrompt }
-            ],
-            max_tokens: 200,
-            temperature: 0.7,
-          });
+            const completion = await openai.chat.completions.create({
+              model: "gpt-3.5-turbo",
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt }
+              ],
+              max_tokens: 250,
+              temperature: 0.8,
+            });
 
-          responseText = completion.choices[0].message.content;
+            responseText = completion.choices[0].message.content;
+          } else {
+            // No related questions found, use general sales response
+            console.log("❌ SERVER: No related questions found, using general sales response");
+            const systemPrompt = "You are a sales assistant. Be persuasive and helpful. Keep responses short.";
+            const userPrompt = `Customer: "${transcript}". Give 3 short sales responses (A, B, C format).`;
+
+            const completion = await openai.chat.completions.create({
+              model: "gpt-3.5-turbo",
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt }
+              ],
+              max_tokens: 200,
+              temperature: 0.7,
+            });
+
+            responseText = completion.choices[0].message.content;
+          }
         }
       } else {
         // For support mode, use original logic

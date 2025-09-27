@@ -15,7 +15,7 @@ async function migrateSalesQAData() {
     await connectToDatabase();
     
     // Read the salesQA.json file
-    const salesQAPath = path.join(__dirname, '../salesQA/salesqa.json');
+    const salesQAPath = path.join(__dirname, '../salesQA/salesQA.json');
     const salesQAData = JSON.parse(fs.readFileSync(salesQAPath, 'utf8'));
     
     console.log(`📊 Found ${salesQAData.length} categories in salesQA.json`);
