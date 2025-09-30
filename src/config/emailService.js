@@ -61,7 +61,14 @@ const getOptimizedEmailTemplate = (verificationCode) => `
 // Send verification email - Optimized for speed
 export const sendVerificationEmail = async (email, verificationCode) => {
   try {
+    console.log(`📧 Attempting to send verification email to: ${email}`);
+    console.log(`🔑 Verification code: ${verificationCode}`);
+    
     const transporter = createTransporter();
+    
+    // Test connection first
+    await transporter.verify();
+    console.log('✅ Email service connection verified');
     
     const mailOptions = {
       from: process.env.EMAIL_USER || 'adeelriaz384@gmail.com',
@@ -76,21 +83,24 @@ export const sendVerificationEmail = async (email, verificationCode) => {
       }
     };
 
-    // Optimized: Use sendMail with callback for non-blocking operation
-    return new Promise((resolve, reject) => {
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error('Email sending failed:', error);
-          reject(new Error('Failed to send verification email'));
-        } else {
-          console.log(`Verification email sent to ${email}: ${info.messageId}`);
-          resolve(true);
-        }
-      });
+    console.log('📤 Sending email with options:', {
+      from: mailOptions.from,
+      to: mailOptions.to,
+      subject: mailOptions.subject
     });
+
+    // Send email and wait for confirmation
+    const result = await transporter.sendMail(mailOptions);
+    console.log(`✅ Verification email sent successfully to ${email}: ${result.messageId}`);
+    return true;
   } catch (error) {
-    console.error('Email sending failed:', error);
-    throw new Error('Failed to send verification email');
+    console.error('❌ Email sending failed:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      response: error.response
+    });
+    throw new Error(`Failed to send verification email: ${error.message}`);
   }
 };
 

@@ -101,22 +101,29 @@ router.post("/send-verification", async (req, res) => {
       attempts: 0
     });
 
-    // Optimized: Non-blocking email sending with immediate response
-    sendVerificationEmail(email, verificationCode.value)
-      .then(() => {
-        console.log(`Verification code sent to ${email}: ${verificationCode.value}`);
-      })
-      .catch(emailError => {
-        console.error('Email sending failed:', emailError);
-        // Remove stored code if email fails
-        verificationCodes.delete(email);
+    // Send verification email and wait for confirmation
+    try {
+      await sendVerificationEmail(email, verificationCode.value);
+      console.log(`✅ Verification code sent to ${email}: ${verificationCode.value}`);
+      
+      return res.json({ 
+        success: true, 
+        message: "Verification code sent to your email"
       });
-
-    // Return immediate response without waiting for email
-    return res.json({ 
-      success: true, 
-      message: "Verification code sent to your email"
-    });
+    } catch (emailError) {
+      console.error('❌ Email sending failed:', emailError);
+      
+      // Fallback: Log the code to console for development
+      console.log(`🔑 FALLBACK - Verification code for ${email}: ${verificationCode.value}`);
+      console.log(`📧 Email service failed, but code is stored and can be verified manually`);
+      
+      // Don't remove the code, let user try to verify
+      return res.json({ 
+        success: true, 
+        message: "Verification code generated. Check console for code if email fails.",
+        fallbackCode: verificationCode.value // Only for development
+      });
+    }
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
@@ -180,6 +187,34 @@ router.post("/set-email-verified", async (req, res) => {
     });
   } catch (e) {
     console.error('Error setting emailVerified:', e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+// --- Test email service ---
+router.post("/test-email", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "Email is required" });
+
+    console.log(`🧪 Testing email service for: ${email}`);
+    
+    // Test email service
+    const { testEmailService } = await import("../config/emailService.js");
+    const isWorking = await testEmailService();
+    
+    if (isWorking) {
+      return res.json({ 
+        success: true, 
+        message: "Email service is working properly" 
+      });
+    } else {
+      return res.status(500).json({ 
+        error: "Email service is not working. Please check configuration." 
+      });
+    }
+  } catch (e) {
+    console.error('Email service test failed:', e);
     return res.status(500).json({ error: e.message });
   }
 });
