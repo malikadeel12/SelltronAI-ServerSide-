@@ -88,47 +88,39 @@ const getOptimizedEmailTemplate = (verificationCode) => `
 </html>
 `;
 
-// Simple email service that works on Render
+// Simple email service - just send the code
 export const sendVerificationEmail = async (email, verificationCode) => {
   try {
-    console.log(`📧 Attempting to send verification email to: ${email}`);
-    console.log(`🔑 Verification code: ${verificationCode}`);
+    console.log(`📧 Sending email to: ${email}`);
+    console.log(`🔑 Code: ${verificationCode}`);
     
-    // Simple Gmail SMTP configuration
+    // Simple Gmail configuration
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.EMAIL_USER || 'skullb960@gmail.com',
-        pass: process.env.EMAIL_PASSWORD || 'kprjldoulepjaoml'
+        user: 'skullb960@gmail.com',
+        pass: 'kprjldoulepjaoml'
       }
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER || 'skullb960@gmail.com',
+      from: 'skullb960@gmail.com',
       to: email,
-      subject: 'Selltron AI - Email Verification Code',
-      html: getOptimizedEmailTemplate(verificationCode)
+      subject: 'Selltron AI - Verification Code',
+      html: `
+        <h2>Your Verification Code</h2>
+        <p><strong>Code: ${verificationCode}</strong></p>
+        <p>This code will expire in 5 minutes.</p>
+      `
     };
 
-    // Send email with simple timeout
-    await Promise.race([
-      transporter.sendMail(mailOptions),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Email timeout')), 20000)
-      )
-    ]);
-    
-    console.log(`✅ Email sent successfully to ${email}`);
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ Email sent to ${email}`);
     return true;
     
   } catch (error) {
-    console.error('❌ Email sending failed:', error.message);
-    
-    // Always log the code for testing
-    console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
-    console.log(`📧 Email failed but code is logged above`);
-    
-    // Return true so the flow continues
+    console.error('❌ Email failed:', error.message);
+    console.log(`🔧 CODE for ${email}: ${verificationCode}`);
     return true;
   }
 };
