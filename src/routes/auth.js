@@ -112,16 +112,34 @@ router.post("/send-verification", async (req, res) => {
       });
     } catch (emailError) {
       console.error('❌ Email sending failed:', emailError);
+      console.error('📧 Email error details:', {
+        message: emailError.message,
+        code: emailError.code,
+        response: emailError.response
+      });
       
-      // Fallback: Log the code to console for development
-      console.log(`🔑 FALLBACK - Verification code for ${email}: ${verificationCode.value}`);
+      // Check if it's a configuration error
+      if (emailError.message.includes('Email service not configured')) {
+        console.log(`🔑 FALLBACK - Email service not configured. Verification code for ${email}: ${verificationCode.value}`);
+        console.log(`📧 Please configure EMAIL_USER and EMAIL_PASSWORD environment variables on Render`);
+        
+        return res.json({ 
+          success: true, 
+          message: "Email service not configured. Using fallback code.",
+          fallbackCode: verificationCode.value,
+          error: "Email service not configured. Please set EMAIL_USER and EMAIL_PASSWORD environment variables."
+        });
+      }
+      
+      // Other email errors
+      console.log(`🔑 FALLBACK - Email sending failed. Verification code for ${email}: ${verificationCode.value}`);
       console.log(`📧 Email service failed, but code is stored and can be verified manually`);
       
-      // Don't remove the code, let user try to verify
       return res.json({ 
         success: true, 
-        message: "Verification code generated. Check console for code if email fails.",
-        fallbackCode: verificationCode.value // Only for development
+        message: "Email sending failed. Using fallback code.",
+        fallbackCode: verificationCode.value,
+        error: emailError.message
       });
     }
   } catch (e) {

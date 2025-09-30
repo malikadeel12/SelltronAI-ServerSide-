@@ -11,16 +11,23 @@ dotenv.config();
 
 // Create transporter for Gmail SMTP
 const createTransporter = () => {
-  // For Gmail, you need to:
-  // 1. Enable 2-factor authentication
-  // 2. Generate an App Password
-  // 3. Use that App Password instead of your regular password
+  // Check if email credentials are available
+  const emailUser = process.env.EMAIL_USER;
+  const emailPassword = process.env.EMAIL_PASSWORD;
+  
+  if (!emailUser || !emailPassword) {
+    console.error('❌ Email credentials not found in environment variables');
+    console.error('Missing: EMAIL_USER or EMAIL_PASSWORD');
+    throw new Error('Email service not configured. Please set EMAIL_USER and EMAIL_PASSWORD environment variables.');
+  }
+  
+  console.log(`📧 Using email: ${emailUser}`);
   
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: process.env.EMAIL_USER ,
-      pass: process.env.EMAIL_PASSWORD 
+      user: emailUser,
+      pass: emailPassword
     }
   });
 
