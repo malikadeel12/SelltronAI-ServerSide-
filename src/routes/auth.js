@@ -72,52 +72,51 @@ router.post("/check-email", async (req, res) => {
   }
 });
 
-// --- Send verification code to email ---
+// --- Send verification code to email - Optimized ---
 router.post("/send-verification", async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: "Email is required" });
 
-    // First check if email already exists
-    try {
-      await adminAuth.getUserByEmail(email);
+    // Optimized: Parallel email check and code generation
+    const [emailCheckResult, verificationCode] = await Promise.allSettled([
+      adminAuth.getUserByEmail(email).catch(error => {
+        if (error.code === 'auth/user-not-found') return null;
+        throw error;
+      }),
+      Promise.resolve(Math.floor(100000 + Math.random() * 900000).toString())
+    ]);
+
+    // Check if email already exists
+    if (emailCheckResult.status === 'fulfilled' && emailCheckResult.value !== null) {
       return res.status(400).json({ 
         error: "Email already in use. Please use a different email or try logging in." 
       });
-    } catch (error) {
-      if (error.code !== 'auth/user-not-found') {
-        throw error;
-      }
-      // Email doesn't exist, continue with verification
     }
 
-    // Generate 6-digit verification code
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    
     // Store code with timestamp (valid for 5 minutes)
     verificationCodes.set(email, {
-      code: verificationCode,
+      code: verificationCode.value,
       timestamp: Date.now(),
       attempts: 0
     });
 
-    // Send real verification email
-    try {
-      await sendVerificationEmail(email, verificationCode);
-      console.log(`Verification code sent to ${email}: ${verificationCode}`);
-      
-      return res.json({ 
-        success: true, 
-        message: "Verification code sent to your email"
+    // Optimized: Non-blocking email sending with immediate response
+    sendVerificationEmail(email, verificationCode.value)
+      .then(() => {
+        console.log(`Verification code sent to ${email}: ${verificationCode.value}`);
+      })
+      .catch(emailError => {
+        console.error('Email sending failed:', emailError);
+        // Remove stored code if email fails
+        verificationCodes.delete(email);
       });
-    } catch (emailError) {
-      // If email fails, remove the stored code and return error
-      verificationCodes.delete(email);
-      console.error('Email sending failed:', emailError);
-      return res.status(500).json({ 
-        error: "Failed to send verification email. Please try again." 
-      });
-    }
+
+    // Return immediate response without waiting for email
+    return res.json({ 
+      success: true, 
+      message: "Verification code sent to your email"
+    });
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
