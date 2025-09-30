@@ -104,29 +104,13 @@ router.post("/send-verification", async (req, res) => {
     console.log(`💾 Stored verification code for ${email}:`, codeData);
     console.log(`📊 Total codes in memory: ${verificationCodes.size}`);
 
-    // Send verification email and wait for confirmation
-    try {
-      await sendVerificationEmail(email, verificationCode.value);
-      console.log(`✅ Verification code sent to ${email}: ${verificationCode.value}`);
-      
-      return res.json({ 
-        success: true, 
-        message: "Verification code sent to your email"
-      });
-    } catch (emailError) {
-      console.error('❌ Email sending failed:', emailError);
-      console.error('📧 Email error details:', {
-        message: emailError.message,
-        code: emailError.code,
-        response: emailError.response
-      });
-      
-      // Return error instead of fallback
-      return res.status(500).json({ 
-        error: `Failed to send verification email: ${emailError.message}`,
-        message: "Please try again or contact support if the issue persists."
-      });
-    }
+    // Send verification email
+    await sendVerificationEmail(email, verificationCode.value);
+    
+    return res.json({ 
+      success: true, 
+      message: "Verification code generated successfully"
+    });
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
