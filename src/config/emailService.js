@@ -68,10 +68,11 @@ export const sendVerificationEmail = async (email, verificationCode) => {
     // Check if we're in production (Render)
     if (process.env.NODE_ENV === 'production') {
       // Use Resend API for production
+      const resendApiKey = process.env.RESEND_API_KEY || 're_1234567890abcdef';
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer re_1234567890abcdef', // You need to get this from Resend
+          'Authorization': `Bearer ${resendApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -97,7 +98,9 @@ export const sendVerificationEmail = async (email, verificationCode) => {
         console.log(`✅ Email sent via Resend to ${email}:`, result.id);
         return true;
       } else {
-        throw new Error('Resend API failed');
+        const errorData = await response.json();
+        console.error('❌ Resend API Error:', errorData);
+        throw new Error(`Resend API failed: ${errorData.message || 'Unknown error'}`);
       }
     } else {
       // Use Gmail SMTP for local development
