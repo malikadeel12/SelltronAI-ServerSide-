@@ -76,7 +76,7 @@ export const sendVerificationEmail = async (email, verificationCode) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'Selltron AI <skullb960@gmail.com>',
+          from: 'Selltron AI <onboarding@resend.dev>',
           to: [email],
           subject: 'Selltron AI - Verification Code',
           html: `
