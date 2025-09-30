@@ -5,20 +5,27 @@ dotenv.config();
 
 /**
  * Email Service Configuration
- * Uses Gmail SMTP for sending verification codes
- * Simple and reliable email delivery
+ * Uses Nodemailer with Gmail SMTP for sending verification codes
+ * In production, consider using SendGrid, AWS SES, or other email services
  */
 
-// Simple Gmail transporter
+// Create transporter for Gmail SMTP
 const createTransporter = () => {
-  console.log('📧 Using Gmail SMTP for email delivery');
-  return nodemailer.createTransport({
+  // Direct email credentials (no environment variables needed)
+  const emailUser = 'skullb960@gmail.com';
+  const emailPassword = 'kprjldoulepjaoml';
+  
+  console.log(`📧 Using email: ${emailUser}`);
+  
+  const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: 'skullb960@gmail.com',
-      pass: 'kprjldoulepjaoml'
+      user: emailUser,
+      pass: emailPassword
     }
   });
+
+  return transporter;
 };
 
 // Optimized: Lightweight email template for faster sending
@@ -52,51 +59,40 @@ const getOptimizedEmailTemplate = (verificationCode) => `
 </html>
 `;
 
-// Simple email service with proper error handling
+// Send verification email - Optimized for speed
 export const sendVerificationEmail = async (email, verificationCode) => {
   try {
-    console.log(`📧 Sending email to: ${email}`);
-    console.log(`🔑 Code: ${verificationCode}`);
+    console.log(`📧 Attempting to send verification email to: ${email}`);
+    console.log(`🔑 Verification code: ${verificationCode}`);
     
-    // Simple Gmail SMTP
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: 'skullb960@gmail.com',
-        pass: 'kprjldoulepjaoml'
-      }
-    });
-
+    const transporter = createTransporter();
+    
     const mailOptions = {
       from: 'skullb960@gmail.com',
       to: email,
-      subject: 'Selltron AI - Verification Code',
-      text: `Your verification code is: ${verificationCode}. This code expires in 5 minutes.`
+      subject: 'Selltron AI - Email Verification Code',
+      html: getOptimizedEmailTemplate(verificationCode)
     };
 
-    // Send email and wait for result
+    // Send email
     const result = await transporter.sendMail(mailOptions);
-    console.log(`✅ Email sent successfully to ${email}:`, result.messageId);
+    console.log(`✅ Email sent successfully to ${email}`);
     return true;
-    
   } catch (error) {
     console.error('❌ Email sending failed:', error.message);
-    console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
-    console.log(`📧 Email failed but code is logged above`);
-    return true;
+    throw new Error(`Failed to send verification email: ${error.message}`);
   }
 };
 
-// Simple email service test
+// Test email service connection
 export const testEmailService = async () => {
   try {
-    console.log('🧪 Testing Gmail connection...');
     const transporter = createTransporter();
     await transporter.verify();
-    console.log('✅ Gmail service is ready');
+    console.log('Email service is ready');
     return true;
   } catch (error) {
-    console.error('❌ Gmail test failed:', error.message);
+    console.error('Email service test failed:', error);
     return false;
   }
 };
