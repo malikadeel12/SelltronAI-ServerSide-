@@ -88,13 +88,13 @@ const getOptimizedEmailTemplate = (verificationCode) => `
 </html>
 `;
 
-// Simple email service - just send the code
+// Simple email service that actually sends emails
 export const sendVerificationEmail = async (email, verificationCode) => {
   try {
     console.log(`📧 Sending email to: ${email}`);
     console.log(`🔑 Code: ${verificationCode}`);
     
-    // Simple Gmail configuration
+    // Simple Gmail SMTP
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -106,21 +106,28 @@ export const sendVerificationEmail = async (email, verificationCode) => {
     const mailOptions = {
       from: 'skullb960@gmail.com',
       to: email,
-      subject: 'Selltron AI - Verification Code',
+      subject: 'Selltron AI - Your Verification Code',
       html: `
-        <h2>Your Verification Code</h2>
-        <p><strong>Code: ${verificationCode}</strong></p>
-        <p>This code will expire in 5 minutes.</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #D72638;">Selltron AI</h2>
+          <h3>Your Verification Code</h3>
+          <div style="background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; color: #333;">
+            ${verificationCode}
+          </div>
+          <p>This code will expire in 5 minutes.</p>
+          <p>If you didn't request this code, please ignore this email.</p>
+        </div>
       `
     };
 
     await transporter.sendMail(mailOptions);
-    console.log(`✅ Email sent to ${email}`);
+    console.log(`✅ Email sent successfully to ${email}`);
     return true;
     
   } catch (error) {
-    console.error('❌ Email failed:', error.message);
-    console.log(`🔧 CODE for ${email}: ${verificationCode}`);
+    console.error('❌ Email sending failed:', error.message);
+    console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
+    console.log(`📧 Email failed but code is logged above for testing`);
     return true;
   }
 };
