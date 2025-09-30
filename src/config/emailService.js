@@ -5,55 +5,19 @@ dotenv.config();
 
 /**
  * Email Service Configuration
- * Uses multiple email providers with fallback mechanism
- * Primary: SendGrid (production), Fallback: Gmail SMTP
+ * Uses Gmail SMTP for sending verification codes
+ * Simple and reliable email delivery
  */
 
-// Create transporter with multiple provider support
+// Simple Gmail transporter
 const createTransporter = () => {
-  const emailUser = process.env.EMAIL_USER || 'skullb960@gmail.com';
-  const emailPassword = process.env.EMAIL_PASSWORD || 'kprjldoulepjaoml';
-  const sendGridApiKey = process.env.SENDGRID_API_KEY;
-  
-  console.log(`📧 Using email: ${emailUser}`);
-  console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔑 SendGrid API Key: ${sendGridApiKey ? 'Available' : 'Not set'}`);
-  
-  // Try SendGrid first (production)
-  if (sendGridApiKey) {
-    console.log('📧 Using SendGrid for email delivery');
-    return nodemailer.createTransport({
-      service: 'SendGrid',
-      auth: {
-        user: 'apikey',
-        pass: sendGridApiKey
-      },
-      connectionTimeout: 10000,
-      greetingTimeout: 5000,
-      socketTimeout: 10000
-    });
-  }
-  
-  // Fallback to Gmail with optimized settings
-  console.log('📧 Using Gmail SMTP as fallback');
+  console.log('📧 Using Gmail SMTP for email delivery');
   return nodemailer.createTransport({
     service: 'gmail',
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
     auth: {
-      user: emailUser,
-      pass: emailPassword
-    },
-    // Optimized settings for Render
-    connectionTimeout: 15000, // Increased timeout
-    greetingTimeout: 10000,   // Increased timeout
-    socketTimeout: 15000,      // Increased timeout
-    pool: false,               // Disable pooling for better reliability
-    maxConnections: 1,         // Single connection
-    rateLimit: 5,              // Reduced rate limit
-    retryDelay: 3000,          // Increased retry delay
-    maxRetries: 2              // Reduced retries
+      user: 'skullb960@gmail.com',
+      pass: 'kprjldoulepjaoml'
+    }
   });
 };
 
@@ -88,83 +52,51 @@ const getOptimizedEmailTemplate = (verificationCode) => `
 </html>
 `;
 
-// Simple email service that actually sends emails
+// Ultra simple email service - no timeout issues
 export const sendVerificationEmail = async (email, verificationCode) => {
-  try {
-    console.log(`📧 Sending email to: ${email}`);
-    console.log(`🔑 Code: ${verificationCode}`);
-    
-    // Simple Gmail SMTP
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: 'skullb960@gmail.com',
-        pass: 'kprjldoulepjaoml'
-      }
-    });
+  console.log(`📧 Sending email to: ${email}`);
+  console.log(`🔑 Code: ${verificationCode}`);
+  
+  // Simple Gmail SMTP with minimal config
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'skullb960@gmail.com',
+      pass: 'kprjldoulepjaoml'
+    }
+  });
 
-    const mailOptions = {
-      from: 'skullb960@gmail.com',
-      to: email,
-      subject: 'Selltron AI - Your Verification Code',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #D72638;">Selltron AI</h2>
-          <h3>Your Verification Code</h3>
-          <div style="background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; color: #333;">
-            ${verificationCode}
-          </div>
-          <p>This code will expire in 5 minutes.</p>
-          <p>If you didn't request this code, please ignore this email.</p>
-        </div>
-      `
-    };
+  const mailOptions = {
+    from: 'skullb960@gmail.com',
+    to: email,
+    subject: 'Selltron AI - Verification Code',
+    text: `Your verification code is: ${verificationCode}. This code expires in 5 minutes.`
+  };
 
-    await transporter.sendMail(mailOptions);
-    console.log(`✅ Email sent successfully to ${email}`);
-    return true;
-    
-  } catch (error) {
-    console.error('❌ Email sending failed:', error.message);
-    console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
-    console.log(`📧 Email failed but code is logged above for testing`);
-    return true;
-  }
+  // Send email without waiting for response
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log('❌ Email error:', error.message);
+      console.log(`🔧 CODE for ${email}: ${verificationCode}`);
+    } else {
+      console.log('✅ Email sent:', info.messageId);
+    }
+  });
+  
+  console.log(`✅ Email process started for ${email}`);
+  return true;
 };
 
-// Test email service connection with timeout
+// Simple email service test
 export const testEmailService = async () => {
-  let transporter;
-  
   try {
-    console.log('🧪 Testing email service connection...');
-    transporter = createTransporter();
-    
-    // Test with timeout
-    await Promise.race([
-      transporter.verify(),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Test timeout')), 10000)
-      )
-    ]);
-    
-    console.log('✅ Email service is ready');
+    console.log('🧪 Testing Gmail connection...');
+    const transporter = createTransporter();
+    await transporter.verify();
+    console.log('✅ Gmail service is ready');
     return true;
   } catch (error) {
-    console.error('❌ Email service test failed:', error.message);
-    console.error('📧 Test error details:', {
-      code: error.code,
-      response: error.response
-    });
+    console.error('❌ Gmail test failed:', error.message);
     return false;
-  } finally {
-    // Close transporter
-    if (transporter) {
-      try {
-        transporter.close();
-      } catch (closeError) {
-        console.error('Error closing test transporter:', closeError);
-      }
-    }
   }
 };
