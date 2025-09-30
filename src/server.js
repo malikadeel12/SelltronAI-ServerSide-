@@ -14,7 +14,8 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",     
       "http://localhost:5174", 
-  "https://selltron-ai-clientsite.vercel.app", // tumhara deployed frontend (example)
+  "https://selltron-ai-clientsite.vercel.app",
+   // tumhara deployed frontend (example)
 ];
 
 // --- Global Middleware ---

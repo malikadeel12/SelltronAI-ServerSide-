@@ -104,9 +104,17 @@ router.post("/send-verification", async (req, res) => {
     console.log(`💾 Stored verification code for ${email}:`, codeData);
     console.log(`📊 Total codes in memory: ${verificationCodes.size}`);
 
-    // Send verification email and wait for confirmation
+    // Send verification email with timeout handling
     try {
-      await sendVerificationEmail(email, verificationCode.value);
+      console.log(`📧 Sending verification email to ${email}...`);
+      
+      // Add timeout wrapper for email sending
+      const emailPromise = sendVerificationEmail(email, verificationCode.value);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Email sending timeout')), 25000)
+      );
+      
+      await Promise.race([emailPromise, timeoutPromise]);
       console.log(`✅ Verification code sent to ${email}: ${verificationCode.value}`);
       
       return res.json({ 
@@ -118,8 +126,12 @@ router.post("/send-verification", async (req, res) => {
       console.error('📧 Email error details:', {
         message: emailError.message,
         code: emailError.code,
-        response: emailError.response
+        response: emailError.response,
+        stack: emailError.stack
       });
+      
+      // Clean up stored code on failure
+      verificationCodes.delete(email);
       
       // Return error instead of fallback
       return res.status(500).json({ 

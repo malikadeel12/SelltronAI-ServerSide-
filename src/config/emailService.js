@@ -9,20 +9,35 @@ dotenv.config();
  * In production, consider using SendGrid, AWS SES, or other email services
  */
 
-// Create transporter for Gmail SMTP
+// Create transporter for Gmail SMTP with production optimizations
 const createTransporter = () => {
-  // Direct email credentials (no environment variables needed)
-  const emailUser = 'skullb960@gmail.com';
-  const emailPassword = 'kprjldoulepjaoml';
+  // Use environment variables with fallback to hardcoded values
+  const emailUser = process.env.EMAIL_USER || 'skullb960@gmail.com';
+  const emailPassword = process.env.EMAIL_PASSWORD || 'kprjldoulepjaoml';
   
   console.log(`📧 Using email: ${emailUser}`);
+  console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
   
   const transporter = nodemailer.createTransport({
     service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // true for 465, false for other ports
     auth: {
       user: emailUser,
       pass: emailPassword
-    }
+    },
+    // Production optimizations for Render
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 5000,    // 5 seconds
+    socketTimeout: 10000,     // 10 seconds
+    pool: true,               // Use connection pooling
+    maxConnections: 5,        // Max connections in pool
+    maxMessages: 100,         // Max messages per connection
+    rateLimit: 10,            // Max 10 emails per second
+    // Retry configuration
+    retryDelay: 2000,         // 2 seconds between retries
+    maxRetries: 3             // Max 3 retries
   });
 
   return transporter;
@@ -59,40 +74,98 @@ const getOptimizedEmailTemplate = (verificationCode) => `
 </html>
 `;
 
-// Send verification email - Optimized for speed
+// Send verification email - Optimized for production with timeout handling
 export const sendVerificationEmail = async (email, verificationCode) => {
+  let transporter;
+  
   try {
     console.log(`📧 Attempting to send verification email to: ${email}`);
     console.log(`🔑 Verification code: ${verificationCode}`);
     
-    const transporter = createTransporter();
+    transporter = createTransporter();
+    
+    // Test connection first with timeout
+    console.log(`🔍 Testing email connection...`);
+    await Promise.race([
+      transporter.verify(),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Connection timeout')), 10000)
+      )
+    ]);
+    console.log(`✅ Email connection verified`);
     
     const mailOptions = {
-      from: 'skullb960@gmail.com',
+      from: process.env.EMAIL_USER || 'skullb960@gmail.com',
       to: email,
       subject: 'Selltron AI - Email Verification Code',
       html: getOptimizedEmailTemplate(verificationCode)
     };
 
-    // Send email
-    const result = await transporter.sendMail(mailOptions);
+    // Send email with timeout
+    console.log(`📤 Sending email...`);
+    const result = await Promise.race([
+      transporter.sendMail(mailOptions),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Send timeout')), 15000)
+      )
+    ]);
+    
     console.log(`✅ Email sent successfully to ${email}`);
     return true;
   } catch (error) {
     console.error('❌ Email sending failed:', error.message);
+    console.error('📧 Error details:', {
+      code: error.code,
+      response: error.response,
+      command: error.command
+    });
+    
+    // Close transporter if it exists
+    if (transporter) {
+      try {
+        transporter.close();
+      } catch (closeError) {
+        console.error('Error closing transporter:', closeError);
+      }
+    }
+    
     throw new Error(`Failed to send verification email: ${error.message}`);
   }
 };
 
-// Test email service connection
+// Test email service connection with timeout
 export const testEmailService = async () => {
+  let transporter;
+  
   try {
-    const transporter = createTransporter();
-    await transporter.verify();
-    console.log('Email service is ready');
+    console.log('🧪 Testing email service connection...');
+    transporter = createTransporter();
+    
+    // Test with timeout
+    await Promise.race([
+      transporter.verify(),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Test timeout')), 10000)
+      )
+    ]);
+    
+    console.log('✅ Email service is ready');
     return true;
   } catch (error) {
-    console.error('Email service test failed:', error);
+    console.error('❌ Email service test failed:', error.message);
+    console.error('📧 Test error details:', {
+      code: error.code,
+      response: error.response
+    });
     return false;
+  } finally {
+    // Close transporter
+    if (transporter) {
+      try {
+        transporter.close();
+      } catch (closeError) {
+        console.error('Error closing test transporter:', closeError);
+      }
+    }
   }
 };
