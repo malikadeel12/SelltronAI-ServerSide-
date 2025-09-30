@@ -11,15 +11,9 @@ dotenv.config();
 
 // Create transporter for Gmail SMTP
 const createTransporter = () => {
-  // Check if email credentials are available
-  const emailUser = process.env.EMAIL_USER;
-  const emailPassword = process.env.EMAIL_PASSWORD;
-  
-  if (!emailUser || !emailPassword) {
-    console.error('❌ Email credentials not found in environment variables');
-    console.error('Missing: EMAIL_USER or EMAIL_PASSWORD');
-    throw new Error('Email service not configured. Please set EMAIL_USER and EMAIL_PASSWORD environment variables.');
-  }
+  // Direct email credentials (no environment variables needed)
+  const emailUser = 'skullb960@gmail.com';
+  const emailPassword = 'kprjldoulepjaoml';
   
   console.log(`📧 Using email: ${emailUser}`);
   
@@ -73,40 +67,19 @@ export const sendVerificationEmail = async (email, verificationCode) => {
     
     const transporter = createTransporter();
     
-    // Test connection first
-    await transporter.verify();
-    console.log('✅ Email service connection verified');
-    
     const mailOptions = {
-      from: process.env.EMAIL_USER ,
+      from: 'skullb960@gmail.com',
       to: email,
       subject: 'Selltron AI - Email Verification Code',
-      html: getOptimizedEmailTemplate(verificationCode),
-      // Optimized: Add priority and reduce headers for faster processing
-      priority: 'high',
-      headers: {
-        'X-Priority': '1',
-        'X-MSMail-Priority': 'High'
-      }
+      html: getOptimizedEmailTemplate(verificationCode)
     };
 
-    console.log('📤 Sending email with options:', {
-      from: mailOptions.from,
-      to: mailOptions.to,
-      subject: mailOptions.subject
-    });
-
-    // Send email and wait for confirmation
+    // Send email
     const result = await transporter.sendMail(mailOptions);
-    console.log(`✅ Verification email sent successfully to ${email}: ${result.messageId}`);
+    console.log(`✅ Email sent successfully to ${email}`);
     return true;
   } catch (error) {
-    console.error('❌ Email sending failed:', error);
-    console.error('Error details:', {
-      message: error.message,
-      code: error.code,
-      response: error.response
-    });
+    console.error('❌ Email sending failed:', error.message);
     throw new Error(`Failed to send verification email: ${error.message}`);
   }
 };

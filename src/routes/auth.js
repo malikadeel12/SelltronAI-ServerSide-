@@ -95,11 +95,14 @@ router.post("/send-verification", async (req, res) => {
     }
 
     // Store code with timestamp (valid for 5 minutes)
-    verificationCodes.set(email, {
+    const codeData = {
       code: verificationCode.value,
       timestamp: Date.now(),
       attempts: 0
-    });
+    };
+    verificationCodes.set(email, codeData);
+    console.log(`💾 Stored verification code for ${email}:`, codeData);
+    console.log(`📊 Total codes in memory: ${verificationCodes.size}`);
 
     // Send verification email and wait for confirmation
     try {
@@ -118,28 +121,10 @@ router.post("/send-verification", async (req, res) => {
         response: emailError.response
       });
       
-      // Check if it's a configuration error
-      if (emailError.message.includes('Email service not configured')) {
-        console.log(`🔑 FALLBACK - Email service not configured. Verification code for ${email}: ${verificationCode.value}`);
-        console.log(`📧 Please configure EMAIL_USER and EMAIL_PASSWORD environment variables on Render`);
-        
-        return res.json({ 
-          success: true, 
-          message: "Email service not configured. Using fallback code.",
-          fallbackCode: verificationCode.value,
-          error: "Email service not configured. Please set EMAIL_USER and EMAIL_PASSWORD environment variables."
-        });
-      }
-      
-      // Other email errors
-      console.log(`🔑 FALLBACK - Email sending failed. Verification code for ${email}: ${verificationCode.value}`);
-      console.log(`📧 Email service failed, but code is stored and can be verified manually`);
-      
-      return res.json({ 
-        success: true, 
-        message: "Email sending failed. Using fallback code.",
-        fallbackCode: verificationCode.value,
-        error: emailError.message
+      // Return error instead of fallback
+      return res.status(500).json({ 
+        error: `Failed to send verification email: ${emailError.message}`,
+        message: "Please try again or contact support if the issue persists."
       });
     }
   } catch (e) {
@@ -151,32 +136,46 @@ router.post("/send-verification", async (req, res) => {
 router.post("/verify-email", async (req, res) => {
   try {
     const { email, code } = req.body;
+    console.log(`🔍 Verifying email code for: ${email}, code: ${code}`);
+    
     if (!email || !code) return res.status(400).json({ error: "Email and code are required" });
 
     const storedData = verificationCodes.get(email);
+    console.log(`📦 Stored data for ${email}:`, storedData);
+    console.log(`📊 Total codes in memory: ${verificationCodes.size}`);
+    
     if (!storedData) {
+      console.log(`❌ No verification code found for email: ${email}`);
       return res.status(400).json({ error: "No verification code found for this email" });
     }
 
     // Check if code is expired (5 minutes)
-    if (Date.now() - storedData.timestamp > 5 * 60 * 1000) {
+    const timeDiff = Date.now() - storedData.timestamp;
+    console.log(`⏰ Time since code generation: ${Math.round(timeDiff / 1000)} seconds`);
+    
+    if (timeDiff > 5 * 60 * 1000) {
+      console.log(`⏰ Code expired for ${email}`);
       verificationCodes.delete(email);
       return res.status(400).json({ error: "Verification code has expired" });
     }
 
     // Check if too many attempts
     if (storedData.attempts >= 3) {
+      console.log(`🚫 Too many attempts for ${email}`);
       verificationCodes.delete(email);
       return res.status(400).json({ error: "Too many failed attempts. Please request a new code." });
     }
 
     // Verify code
+    console.log(`🔍 Comparing codes: stored="${storedData.code}" vs provided="${code}"`);
     if (storedData.code !== code) {
       storedData.attempts += 1;
+      console.log(`❌ Invalid code for ${email}, attempt ${storedData.attempts}`);
       return res.status(400).json({ error: "Invalid verification code" });
     }
 
     // Code is valid - remove from storage
+    console.log(`✅ Code verified successfully for ${email}`);
     verificationCodes.delete(email);
 
     return res.json({ 
@@ -184,6 +183,7 @@ router.post("/verify-email", async (req, res) => {
       message: "Email verified successfully" 
     });
   } catch (e) {
+    console.error('❌ Verification error:', e);
     return res.status(500).json({ error: e.message });
   }
 });
@@ -209,6 +209,23 @@ router.post("/set-email-verified", async (req, res) => {
   }
 });
 
+// --- Debug email configuration ---
+router.get("/debug-email", async (req, res) => {
+  try {
+    const emailUser = process.env.EMAIL_USER;
+    const emailPassword = process.env.EMAIL_PASSWORD;
+    
+    return res.json({
+      emailConfigured: !!(emailUser && emailPassword),
+      emailUser: emailUser ? `${emailUser.substring(0, 3)}***@gmail.com` : 'Not set',
+      hasPassword: !!emailPassword,
+      environment: process.env.NODE_ENV || 'development'
+    });
+  } catch (e) {
+    return res.status(500).json({ error: e.message });
+  }
+});
+
 // --- Test email service ---
 router.post("/test-email", async (req, res) => {
   try {
@@ -217,15 +234,26 @@ router.post("/test-email", async (req, res) => {
 
     console.log(`🧪 Testing email service for: ${email}`);
     
-    // Test email service
-    const { testEmailService } = await import("../config/emailService.js");
+    // Test email service connection
+    const { testEmailService, sendVerificationEmail } = await import("../config/emailService.js");
     const isWorking = await testEmailService();
     
     if (isWorking) {
-      return res.json({ 
-        success: true, 
-        message: "Email service is working properly" 
-      });
+      // Try to send a test email
+      try {
+        const testCode = "123456";
+        await sendVerificationEmail(email, testCode);
+        return res.json({ 
+          success: true, 
+          message: `Test email sent successfully to ${email}. Check your inbox and spam folder.`,
+          testCode: testCode
+        });
+      } catch (emailError) {
+        console.error('Test email sending failed:', emailError);
+        return res.status(500).json({ 
+          error: `Email service connection works but sending failed: ${emailError.message}` 
+        });
+      }
     } else {
       return res.status(500).json({ 
         error: "Email service is not working. Please check configuration." 

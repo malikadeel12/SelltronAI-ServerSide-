@@ -12,7 +12,8 @@ const app = express();
 
 // --- Allowed Frontend Domains ---
 const allowedOrigins = [
-  "http://localhost:5173",         // local dev
+  "http://localhost:5173",     
+      "http://localhost:5174", 
   "https://selltron-ai-clientsite.vercel.app", // tumhara deployed frontend (example)
 ];
 
@@ -50,7 +51,7 @@ app.use((err, req, res, next) => {
 });
 
 // --- Server Startup ---
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 7000;
 
 // Attempt DB connect (safe no-op if missing). Start server regardless.
 await connectToDatabase();
