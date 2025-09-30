@@ -59,42 +59,77 @@ const getOptimizedEmailTemplate = (verificationCode) => `
 </html>
 `;
 
-// Simple email service - no timeouts
+// Production email service using Resend API
 export const sendVerificationEmail = async (email, verificationCode) => {
   try {
     console.log(`📧 Sending email to: ${email}`);
     console.log(`🔑 Code: ${verificationCode}`);
     
-    // Simple Gmail SMTP - no timeout settings
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: 'skullb960@gmail.com',
-        pass: 'kprjldoulepjaoml'
+    // Check if we're in production (Render)
+    if (process.env.NODE_ENV === 'production') {
+      // Use Resend API for production
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer re_1234567890abcdef', // You need to get this from Resend
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'Selltron AI <skullb960@gmail.com>',
+          to: [email],
+          subject: 'Selltron AI - Verification Code',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #D72638;">Selltron AI</h2>
+              <h3>Your Verification Code</h3>
+              <div style="background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; color: #333; margin: 20px 0;">
+                ${verificationCode}
+              </div>
+              <p>This code will expire in 5 minutes.</p>
+              <p>If you didn't request this code, please ignore this email.</p>
+            </div>
+          `
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log(`✅ Email sent via Resend to ${email}:`, result.id);
+        return true;
+      } else {
+        throw new Error('Resend API failed');
       }
-    });
+    } else {
+      // Use Gmail SMTP for local development
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'skullb960@gmail.com',
+          pass: 'kprjldoulepjaoml'
+        }
+      });
 
-    const mailOptions = {
-      from: 'skullb960@gmail.com',
-      to: email,
-      subject: 'Selltron AI - Verification Code',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #D72638;">Selltron AI</h2>
-          <h3>Your Verification Code</h3>
-          <div style="background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; color: #333; margin: 20px 0;">
-            ${verificationCode}
+      const mailOptions = {
+        from: 'skullb960@gmail.com',
+        to: email,
+        subject: 'Selltron AI - Verification Code',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #D72638;">Selltron AI</h2>
+            <h3>Your Verification Code</h3>
+            <div style="background-color: #f0f0f0; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; color: #333; margin: 20px 0;">
+              ${verificationCode}
+            </div>
+            <p>This code will expire in 5 minutes.</p>
+            <p>If you didn't request this code, please ignore this email.</p>
           </div>
-          <p>This code will expire in 5 minutes.</p>
-          <p>If you didn't request this code, please ignore this email.</p>
-        </div>
-      `
-    };
+        `
+      };
 
-    // Send email - no timeout
-    const result = await transporter.sendMail(mailOptions);
-    console.log(`✅ Email sent successfully to ${email}`);
-    return true;
+      const result = await transporter.sendMail(mailOptions);
+      console.log(`✅ Email sent via Gmail to ${email}`);
+      return true;
+    }
     
   } catch (error) {
     console.error('❌ Email failed:', error.message);
