@@ -19,8 +19,8 @@ const createTransporter = () => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: process.env.EMAIL_USER || 'adeelriaz384@gmail.com',
-      pass: process.env.EMAIL_PASSWORD || 'xysbispcrcqwyktx'
+      user: process.env.EMAIL_USER ,
+      pass: process.env.EMAIL_PASSWORD 
     }
   });
 
@@ -71,7 +71,7 @@ export const sendVerificationEmail = async (email, verificationCode) => {
     console.log('✅ Email service connection verified');
     
     const mailOptions = {
-      from: process.env.EMAIL_USER || 'adeelriaz384@gmail.com',
+      from: process.env.EMAIL_USER ,
       to: email,
       subject: 'Selltron AI - Email Verification Code',
       html: getOptimizedEmailTemplate(verificationCode),
