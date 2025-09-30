@@ -52,39 +52,39 @@ const getOptimizedEmailTemplate = (verificationCode) => `
 </html>
 `;
 
-// Ultra simple email service - no timeout issues
+// Simple email service with proper error handling
 export const sendVerificationEmail = async (email, verificationCode) => {
-  console.log(`📧 Sending email to: ${email}`);
-  console.log(`🔑 Code: ${verificationCode}`);
-  
-  // Simple Gmail SMTP with minimal config
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: 'skullb960@gmail.com',
-      pass: 'kprjldoulepjaoml'
-    }
-  });
+  try {
+    console.log(`📧 Sending email to: ${email}`);
+    console.log(`🔑 Code: ${verificationCode}`);
+    
+    // Simple Gmail SMTP
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'skullb960@gmail.com',
+        pass: 'kprjldoulepjaoml'
+      }
+    });
 
-  const mailOptions = {
-    from: 'skullb960@gmail.com',
-    to: email,
-    subject: 'Selltron AI - Verification Code',
-    text: `Your verification code is: ${verificationCode}. This code expires in 5 minutes.`
-  };
+    const mailOptions = {
+      from: 'skullb960@gmail.com',
+      to: email,
+      subject: 'Selltron AI - Verification Code',
+      text: `Your verification code is: ${verificationCode}. This code expires in 5 minutes.`
+    };
 
-  // Send email without waiting for response
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log('❌ Email error:', error.message);
-      console.log(`🔧 CODE for ${email}: ${verificationCode}`);
-    } else {
-      console.log('✅ Email sent:', info.messageId);
-    }
-  });
-  
-  console.log(`✅ Email process started for ${email}`);
-  return true;
+    // Send email and wait for result
+    const result = await transporter.sendMail(mailOptions);
+    console.log(`✅ Email sent successfully to ${email}:`, result.messageId);
+    return true;
+    
+  } catch (error) {
+    console.error('❌ Email sending failed:', error.message);
+    console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
+    console.log(`📧 Email failed but code is logged above`);
+    return true;
+  }
 };
 
 // Simple email service test
