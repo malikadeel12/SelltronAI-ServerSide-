@@ -104,14 +104,14 @@ router.post("/send-verification", async (req, res) => {
     console.log(`💾 Stored verification code for ${email}:`, codeData);
     console.log(`📊 Total codes in memory: ${verificationCodes.size}`);
 
-    // Send verification email with timeout handling
+    // Send verification email with fallback strategies
     try {
       console.log(`📧 Sending verification email to ${email}...`);
       
       // Add timeout wrapper for email sending
       const emailPromise = sendVerificationEmail(email, verificationCode.value);
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Email sending timeout')), 25000)
+        setTimeout(() => reject(new Error('Email sending timeout')), 35000)
       );
       
       await Promise.race([emailPromise, timeoutPromise]);
@@ -130,13 +130,18 @@ router.post("/send-verification", async (req, res) => {
         stack: emailError.stack
       });
       
-      // Clean up stored code on failure
-      verificationCodes.delete(email);
+      // TEMPORARY FIX: For production, log the code and continue
+      console.log(`🔧 PRODUCTION FALLBACK: Verification code for ${email}: ${verificationCode.value}`);
+      console.log(`📧 Email sending failed, but code is logged above for testing`);
       
-      // Return error instead of fallback
-      return res.status(500).json({ 
-        error: `Failed to send verification email: ${emailError.message}`,
-        message: "Please try again or contact support if the issue persists."
+      // Don't clean up the code, let user try to verify
+      // verificationCodes.delete(email);
+      
+      // Return success with warning message
+      return res.json({ 
+        success: true, 
+        message: "Email service temporarily unavailable. Check server logs for verification code.",
+        warning: "Email delivery failed, but verification code is available in server logs"
       });
     }
   } catch (e) {
