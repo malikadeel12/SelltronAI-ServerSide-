@@ -28,7 +28,7 @@ export const sendVerificationEmail = async (email, verificationCode) => {
           subject: 'Selltron AI - Verification Code'
         }],
         from: {
-          email: 'skullb960@gmail.com',
+          email: 'noreply@sendgrid.com',
           name: 'Selltron AI'
         },
         content: [{
