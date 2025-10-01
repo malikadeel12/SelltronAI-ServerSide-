@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { adminAuth } from "../config/firebaseAdmin.js";
-import { sendVerificationEmail, sendVerificationEmailAlternative, sendVerificationEmailDirect } from "../config/emailService.js";
+import { sendVerificationEmail } from "../config/emailService.js";
 
 /**
  * Change Summary (MCP Context 7 Best Practices)
@@ -104,37 +104,13 @@ router.post("/send-verification", async (req, res) => {
     console.log(`💾 Stored verification code for ${email}:`, codeData);
     console.log(`📊 Total codes in memory: ${verificationCodes.size}`);
 
-    // Send verification email with fallback (async - don't wait)
+    // Send verification email (async - don't wait)
     sendVerificationEmail(email, verificationCode.value)
       .then(() => {
         console.log(`✅ Email sent successfully to ${email}`);
       })
-      .catch(async (error) => {
-        console.error(`❌ Primary email sending failed for ${email}:`, error.message);
-        console.log(`🔄 Trying alternative email service...`);
-        
-        // Try alternative email service
-        try {
-          const alternativeResult = await sendVerificationEmailAlternative(email, verificationCode.value);
-          if (alternativeResult) {
-            console.log(`✅ Alternative email sent successfully to ${email}`);
-          } else {
-            console.error(`❌ Alternative email also failed for ${email}`);
-            // Try third fallback
-            try {
-              const directResult = await sendVerificationEmailDirect(email, verificationCode.value);
-              if (directResult) {
-                console.log(`✅ Direct email sent successfully to ${email}`);
-              } else {
-                console.error(`❌ All email services failed for ${email}`);
-              }
-            } catch (directError) {
-              console.error(`❌ Direct email service failed:`, directError.message);
-            }
-          }
-        } catch (altError) {
-          console.error(`❌ Alternative email service failed:`, altError.message);
-        }
+      .catch((error) => {
+        console.error(`❌ Email sending failed for ${email}:`, error.message);
       });
     
     return res.json({ 
