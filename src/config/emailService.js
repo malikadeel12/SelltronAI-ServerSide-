@@ -233,40 +233,67 @@ This is an automated message. Please do not reply to this email.`,
   }
 };
 
-// Simple email function - no fancy template
+// Ultra simple email - text only, no HTML
 export const sendProfessionalEmail = async (email, verificationCode) => {
   try {
-    console.log(`📧 Sending simple email to: ${email}`);
+    console.log(`📧 Sending ultra-simple email to: ${email}`);
+    console.log(`🔑 Code: ${verificationCode}`);
+    
+    const msg = {
+      to: email,
+      from: 'nomanriaz7980@gmail.com',
+      subject: 'Verification Code',
+      text: `Code: ${verificationCode}
+
+Expires in 5 minutes.
+
+Selltron AI`
+    };
+    
+    console.log('📧 Email details:', {
+      to: email,
+      from: 'nomanriaz7980@gmail.com',
+      subject: 'Verification Code'
+    });
+    
+    const result = await sgMail.send(msg);
+    console.log(`✅ Ultra-simple email sent successfully to ${email}`);
+    console.log('📧 SendGrid response:', result);
+    return true;
+    
+  } catch (error) {
+    console.error('❌ Ultra-simple email failed:', error.message);
+    console.error('❌ Full error:', error);
+    return false;
+  }
+};
+
+// Alternative: Try with different sender approach
+export const sendAlternativeEmail = async (email, verificationCode) => {
+  try {
+    console.log(`📧 Trying alternative email approach to: ${email}`);
     
     const msg = {
       to: email,
       from: {
         email: 'nomanriaz7980@gmail.com',
-        name: 'Selltron AI'
+        name: 'Selltron'
       },
-      subject: 'Your Verification Code',
-      text: `Your verification code is: ${verificationCode}
-
-This code will expire in 5 minutes.
-
-If you didn't request this code, please ignore this email.
-
-Best regards,
-Selltron AI Team`,
-      html: `
-        <p>Your verification code is: <strong>${verificationCode}</strong></p>
-        <p>This code will expire in 5 minutes.</p>
-        <p>If you didn't request this code, please ignore this email.</p>
-        <p>Best regards,<br>Selltron AI Team</p>
-      `
+      subject: 'Code',
+      text: `${verificationCode}`,
+      // Add some basic headers that might help
+      headers: {
+        'X-Mailer': 'Selltron',
+        'X-Priority': '3'
+      }
     };
     
     const result = await sgMail.send(msg);
-    console.log(`✅ Simple email sent successfully to ${email}`);
+    console.log(`✅ Alternative email sent to ${email}`);
     return true;
     
   } catch (error) {
-    console.error('❌ Simple email failed:', error.message);
+    console.error('❌ Alternative email failed:', error.message);
     return false;
   }
 };
