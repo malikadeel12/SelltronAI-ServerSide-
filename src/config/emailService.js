@@ -17,33 +17,14 @@ export const sendVerificationEmail = async (email, verificationCode) => {
     console.log(`🔧 EMAIL_USER: ${process.env.EMAIL_USER || 'skullb960@gmail.com'}`);
     console.log(`🔧 EMAIL_PASSWORD: ${process.env.EMAIL_PASSWORD ? '***SET***' : '***NOT SET***'}`);
     
-    // Simple Gmail SMTP configuration with fallback
-    let transporter;
-    
-    try {
-      // Try with port 587 first
-      transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false,
-        auth: {
-          user: process.env.EMAIL_USER || 'skullb960@gmail.com',
-          pass: process.env.EMAIL_PASSWORD || 'kprjldoulepjaoml'
-        }
-      });
-    } catch (error) {
-      console.log('🔄 Trying alternative SMTP configuration...');
-      // Fallback to port 465 with SSL
-      transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
-        auth: {
-          user: process.env.EMAIL_USER || 'skullb960@gmail.com',
-          pass: process.env.EMAIL_PASSWORD || 'kprjldoulepjaoml'
-        }
-      });
-    }
+    // Simple nodemailer configuration without SMTP
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER || 'skullb960@gmail.com',
+        pass: process.env.EMAIL_PASSWORD || 'kprjldoulepjaoml'
+      }
+    });
 
     console.log(`🔧 Transporter created successfully`);
 
