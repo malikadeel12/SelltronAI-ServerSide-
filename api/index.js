@@ -1,5 +1,5 @@
 // Import the main server application
-import "../src/server.js";
+import app from "../src/server.js";
 
 // Add error handling for Vercel
 process.on('uncaughtException', (error) => {
@@ -9,3 +9,6 @@ process.on('uncaughtException', (error) => {
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
+
+// Export the app for Vercel
+export default app;
