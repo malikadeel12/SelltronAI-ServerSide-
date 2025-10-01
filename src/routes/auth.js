@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { adminAuth } from "../config/firebaseAdmin.js";
-import { sendEmailWithSpamPrevention, sendProfessionalEmail, sendAlternativeEmail } from "../config/emailService.js";
+import { sendEmailWithSpamPrevention, sendProfessionalEmail, sendAlternativeEmail, testEmailService } from "../config/emailService.js";
 
 /**
  * Change Summary (MCP Context 7 Best Practices)
@@ -225,7 +225,6 @@ router.post("/test-email", async (req, res) => {
     console.log(`🧪 Testing email service for: ${email}`);
     
     // Test email service connection
-    const { testEmailService, sendAlternativeEmail } = await import("../config/emailService.js");
     const isWorking = await testEmailService();
     
     if (isWorking) {

@@ -1,33 +1,37 @@
-import sgMail from '@sendgrid/mail';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 /**
  * Email Service Configuration
- * Uses SendGrid for email delivery
- * Configured for client's SendGrid API
+ * Primary: Brevo (Sendinblue) - Best for deliverability
+ * 300 emails/day FREE, Never blocked on Render, Never goes to spam
  */
 
-// Initialize SendGrid
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// Brevo (Sendinblue) configuration
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const BREVO_BASE_URL = 'https://api.brevo.com/v3/sendEmail';
 
-export const sendVerificationEmail = async (email, verificationCode) => {
+// Brevo (Sendinblue) email function
+const sendBrevoEmail = async (email, verificationCode) => {
   try {
-    console.log(`📧 Sending email to: ${email}`);
+    console.log(`📧 Sending email via Brevo to: ${email}`);
     console.log(`🔑 Code: ${verificationCode}`);
-    console.log(`🔧 SENDGRID_API_KEY: ${process.env.SENDGRID_API_KEY ? '***SET***' : '***NOT SET***'}`);
+    console.log(`🔧 BREVO_API_KEY: ${BREVO_API_KEY ? '***SET***' : '***NOT SET***'}`);
     
-    const msg = {
-      to: email,
-      from: {
-        email: 'nomanriaz7980@gmail.com',
-        name: 'Selltron AI'
+    const emailData = {
+      sender: {
+        name: "Selltron AI",
+        email: "nomanriaz7980@gmail.com"
       },
-      replyTo: 'nomanriaz7980@gmail.com',
-      subject: 'Your Selltron AI Verification Code',
-      text: `Your Selltron AI verification code is: ${verificationCode}\n\nThis code will expire in 5 minutes.\n\nIf you didn't request this code, please ignore this email.\n\nBest regards,\nSelltron AI Team`,
-      html: `
+      to: [
+        {
+          email: email,
+          name: "User"
+        }
+      ],
+      subject: "Your Selltron AI Verification Code",
+      htmlContent: `
         <!DOCTYPE html>
         <html>
         <head>
@@ -68,244 +72,162 @@ export const sendVerificationEmail = async (email, verificationCode) => {
         </body>
         </html>
       `,
-      // Add headers to improve deliverability
-      headers: {
-        'X-Mailer': 'Selltron AI',
-        'X-Priority': '3',
-        'X-MSMail-Priority': 'Normal',
-        'Importance': 'Normal'
-      },
-      // Add categories for better tracking
-      categories: ['verification', 'selltron-ai'],
-      // Add custom args for tracking
-      customArgs: {
-        source: 'verification',
-        timestamp: new Date().toISOString()
-      }
+      textContent: `Your Selltron AI verification code is: ${verificationCode}\n\nThis code will expire in 5 minutes.\n\nIf you didn't request this code, please ignore this email.\n\nBest regards,\nSelltron AI Team`
     };
 
-    console.log(`🔧 Attempting to send email via SendGrid...`);
-    console.log(`🔧 Email details:`, {
-      from: msg.from,
-      to: msg.to,
-      subject: msg.subject
+    const response = await fetch(BREVO_BASE_URL, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': BREVO_API_KEY,
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify(emailData)
     });
-    
-    const result = await sgMail.send(msg);
-    console.log(`✅ Email sent successfully to ${email}`);
-    console.log(`📧 SendGrid response:`, result);
-    return true;
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log(`✅ Brevo email sent successfully to ${email}`);
+      console.log(`📧 Brevo response:`, result);
+      return true;
+    } else {
+      const errorData = await response.text();
+      console.error('❌ Brevo API error:', response.status, errorData);
+      return false;
+    }
     
   } catch (error) {
-    console.error('❌ SendGrid email failed:', error.message);
+    console.error('❌ Brevo email failed:', error.message);
+    console.error('❌ Full error:', error);
+    return false;
+  }
+};
+
+export const sendVerificationEmail = async (email, verificationCode) => {
+  try {
+    console.log(`📧 Sending email to: ${email}`);
+    console.log(`🔑 Code: ${verificationCode}`);
+    
+    // Use Brevo (Sendinblue) only
+    if (!BREVO_API_KEY) {
+      console.error('❌ BREVO_API_KEY not set! Please add BREVO_API_KEY to environment variables.');
+      console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
+      return false;
+    }
+    
+    console.log(`🚀 Sending via Brevo (Sendinblue)...`);
+    const result = await sendBrevoEmail(email, verificationCode);
+    
+    if (result) {
+      console.log(`✅ Brevo email sent successfully to ${email}`);
+      return true;
+    } else {
+      console.error('❌ Brevo email failed');
+      console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
+      return false;
+    }
+    
+  } catch (error) {
+    console.error('❌ Brevo email service failed:', error.message);
     console.error('❌ Full error:', error);
     console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
     return false;
   }
 };
 
-// Send email with advanced spam prevention
+// Send email with advanced spam prevention using Brevo
 export const sendEmailWithSpamPrevention = async (email, verificationCode) => {
   try {
-    console.log(`📧 Sending advanced spam-safe email to: ${email}`);
+    console.log(`📧 Sending advanced spam-safe email via Brevo to: ${email}`);
     
-    const msg = {
-      to: email,
-      from: {
-        email: 'nomanriaz7980@gmail.com',
-        name: 'Selltron AI'
-      },
-      replyTo: 'nomanriaz7980@gmail.com',
-      subject: 'Selltron AI - Your Verification Code',
-      text: `Hello,
-
-Your Selltron AI verification code is: ${verificationCode}
-
-This code will expire in 5 minutes.
-
-If you didn't request this code, please ignore this email.
-
-Best regards,
-Selltron AI Team
-
----
-This is an automated message. Please do not reply to this email.`,
-      html: `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Verification Code - Selltron AI</title>
-          <style>
-            body { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f8f9fa; }
-            .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; }
-            .header { background-color: #D72638; padding: 30px; text-align: center; }
-            .content { padding: 40px 30px; }
-            .code-box { background-color: #f8f9fa; border: 2px solid #D72638; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0; }
-            .verification-code { color: #D72638; font-size: 28px; font-weight: bold; letter-spacing: 3px; font-family: 'Courier New', monospace; }
-            .footer { background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e9ecef; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: bold;">Selltron AI</h1>
-              <p style="color: #ffffff; margin: 5px 0 0 0; font-size: 16px;">Email Verification</p>
-            </div>
-            
-            <div class="content">
-              <h2 style="color: #333333; margin: 0 0 20px 0; font-size: 20px; text-align: center;">Your Verification Code</h2>
-              
-              <div class="code-box">
-                <span class="verification-code">${verificationCode}</span>
-              </div>
-              
-              <div style="text-align: center; color: #666666; font-size: 14px; line-height: 1.5;">
-                <p style="margin: 0 0 10px 0;">This verification code will expire in 5 minutes.</p>
-                <p style="margin: 0;">If you didn't request this code, please ignore this email.</p>
-              </div>
-            </div>
-            
-            <div class="footer">
-              <p style="color: #666666; font-size: 12px; margin: 0;">© 2024 Selltron AI. All rights reserved.</p>
-              <p style="color: #999999; font-size: 11px; margin: 5px 0 0 0;">This is an automated message. Please do not reply to this email.</p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `,
-      // Advanced anti-spam headers
-      headers: {
-        'X-Mailer': 'Selltron AI v1.0',
-        'X-Priority': '3',
-        'X-MSMail-Priority': 'Normal',
-        'Importance': 'Normal',
-        'X-Spam-Check': 'false',
-        'X-Anti-Abuse': 'This is a legitimate verification email from Selltron AI',
-        'X-Entity-Ref-ID': `selltron-ai-${Date.now()}`,
-        'X-SG-EID': `selltron-verification-${Math.random().toString(36).substr(2, 9)}`,
-        'List-Unsubscribe': '<mailto:unsubscribe@selltron-ai.com>',
-        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
-      },
-      // Add categories for better tracking
-      categories: ['verification', 'selltron-ai', 'account-security'],
-      // Add custom args for tracking
-      customArgs: {
-        source: 'verification',
-        timestamp: new Date().toISOString(),
-        user_agent: 'selltron-ai-verification',
-        campaign_id: `verify-${Date.now()}`
-      },
-      // Advanced mail settings for better deliverability
-      mailSettings: {
-        sandboxMode: {
-          enable: false
-        },
-        footer: {
-          enable: false
-        },
-        spamCheck: {
-          enable: false
-        }
-      },
-      // Add tracking settings
-      trackingSettings: {
-        clickTracking: {
-          enable: false
-        },
-        openTracking: {
-          enable: false
-        },
-        subscriptionTracking: {
-          enable: false
-        }
-      }
-    };
+    if (!BREVO_API_KEY) {
+      console.error('❌ BREVO_API_KEY not set! Please add BREVO_API_KEY to environment variables.');
+      return false;
+    }
     
-    const result = await sgMail.send(msg);
-    console.log(`✅ Advanced spam-safe email sent successfully to ${email}`);
-    return true;
+    const result = await sendBrevoEmail(email, verificationCode);
+    
+    if (result) {
+      console.log(`✅ Advanced spam-safe Brevo email sent successfully to ${email}`);
+      return true;
+    } else {
+      console.error('❌ Advanced spam-safe Brevo email failed');
+      return false;
+    }
     
   } catch (error) {
-    console.error('❌ Advanced spam-safe email failed:', error.message);
+    console.error('❌ Advanced spam-safe Brevo email failed:', error.message);
     return false;
   }
 };
 
-// Ultra simple email - text only, no HTML
+// Ultra simple email using Brevo
 export const sendProfessionalEmail = async (email, verificationCode) => {
   try {
-    console.log(`📧 Sending ultra-simple email to: ${email}`);
+    console.log(`📧 Sending ultra-simple email via Brevo to: ${email}`);
     console.log(`🔑 Code: ${verificationCode}`);
     
-    const msg = {
-      to: email,
-      from: 'nomanriaz7980@gmail.com',
-      subject: 'Verification Code',
-      text: `Code: ${verificationCode}
-
-Expires in 5 minutes.
-
-Selltron AI`
-    };
+    if (!BREVO_API_KEY) {
+      console.error('❌ BREVO_API_KEY not set! Please add BREVO_API_KEY to environment variables.');
+      return false;
+    }
     
-    console.log('📧 Email details:', {
-      to: email,
-      from: 'nomanriaz7980@gmail.com',
-      subject: 'Verification Code'
-    });
+    const result = await sendBrevoEmail(email, verificationCode);
     
-    const result = await sgMail.send(msg);
-    console.log(`✅ Ultra-simple email sent successfully to ${email}`);
-    console.log('📧 SendGrid response:', result);
-    return true;
+    if (result) {
+      console.log(`✅ Ultra-simple Brevo email sent successfully to ${email}`);
+      return true;
+    } else {
+      console.error('❌ Ultra-simple Brevo email failed');
+      return false;
+    }
     
   } catch (error) {
-    console.error('❌ Ultra-simple email failed:', error.message);
-    console.error('❌ Full error:', error);
+    console.error('❌ Ultra-simple Brevo email failed:', error.message);
     return false;
   }
 };
 
-// Alternative: Try with different sender approach
+// Alternative: Try with different sender approach using Brevo
 export const sendAlternativeEmail = async (email, verificationCode) => {
   try {
-    console.log(`📧 Trying alternative email approach to: ${email}`);
+    console.log(`📧 Trying alternative Brevo email approach to: ${email}`);
     
-    const msg = {
-      to: email,
-      from: {
-        email: 'nomanriaz7980@gmail.com',
-        name: 'Selltron'
-      },
-      subject: 'Code',
-      text: `${verificationCode}`,
-      // Add some basic headers that might help
-      headers: {
-        'X-Mailer': 'Selltron',
-        'X-Priority': '3'
-      }
-    };
+    if (!BREVO_API_KEY) {
+      console.error('❌ BREVO_API_KEY not set! Please add BREVO_API_KEY to environment variables.');
+      return false;
+    }
     
-    const result = await sgMail.send(msg);
-    console.log(`✅ Alternative email sent to ${email}`);
-    return true;
+    const result = await sendBrevoEmail(email, verificationCode);
+    
+    if (result) {
+      console.log(`✅ Alternative Brevo email sent to ${email}`);
+      return true;
+    } else {
+      console.error('❌ Alternative Brevo email failed');
+      return false;
+    }
     
   } catch (error) {
-    console.error('❌ Alternative email failed:', error.message);
+    console.error('❌ Alternative Brevo email failed:', error.message);
     return false;
   }
 };
 
-// Test email service connection
+// Test Brevo email service connection
 export const testEmailService = async () => {
   try {
-    console.log('🧪 Testing SendGrid connection...');
-    console.log('✅ SendGrid service is ready');
+    console.log('🧪 Testing Brevo connection...');
+    
+    if (!BREVO_API_KEY) {
+      console.error('❌ BREVO_API_KEY not set! Please add BREVO_API_KEY to environment variables.');
+      return false;
+    }
+    
+    console.log('✅ Brevo service is ready');
     return true;
   } catch (error) {
-    console.error('❌ SendGrid test failed:', error);
+    console.error('❌ Brevo test failed:', error);
     return false;
   }
 };
