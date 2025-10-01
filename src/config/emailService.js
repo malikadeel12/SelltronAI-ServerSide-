@@ -17,22 +17,19 @@ export const sendVerificationEmail = async (email, verificationCode) => {
     console.log(`🔧 EMAIL_USER: ${process.env.EMAIL_USER || 'skullb960@gmail.com'}`);
     console.log(`🔧 EMAIL_PASSWORD: ${process.env.EMAIL_PASSWORD ? '***SET***' : '***NOT SET***'}`);
     
-    // Gmail SMTP with proper settings for Render
+    // Gmail SMTP with different approach for Render
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
       host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // true for 465, false for other ports
+      port: 465,
+      secure: true, // Use SSL
       auth: {
         user: process.env.EMAIL_USER || 'skullb960@gmail.com',
         pass: process.env.EMAIL_PASSWORD || 'kprjldoulepjaoml'
       },
       tls: {
-        rejectUnauthorized: false
-      },
-      connectionTimeout: 60000, // 60 seconds
-      greetingTimeout: 30000, // 30 seconds
-      socketTimeout: 60000 // 60 seconds
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3'
+      }
     });
 
     console.log(`🔧 Transporter created successfully`);
@@ -66,7 +63,25 @@ export const sendVerificationEmail = async (email, verificationCode) => {
     };
 
     console.log(`🔧 Attempting to send email...`);
-    const result = await transporter.sendMail(mailOptions);
+    
+    // Add timeout wrapper
+    const sendEmailWithTimeout = new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Email sending timeout after 30 seconds'));
+      }, 30000);
+      
+      transporter.sendMail(mailOptions)
+        .then(result => {
+          clearTimeout(timeout);
+          resolve(result);
+        })
+        .catch(error => {
+          clearTimeout(timeout);
+          reject(error);
+        });
+    });
+    
+    const result = await sendEmailWithTimeout;
     console.log(`✅ Email sent successfully to ${email}`);
     console.log(`📧 Email result:`, result);
     return true;
