@@ -1,41 +1,29 @@
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 /**
  * Email Service Configuration
- * Uses Gmail SMTP for email delivery
- * Configured for client's Gmail credentials
+ * Uses SendGrid for email delivery
+ * Configured for client's SendGrid API
  */
 
-// Gmail SMTP with proper configuration for Render
+// Initialize SendGrid
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
 export const sendVerificationEmail = async (email, verificationCode) => {
   try {
     console.log(`📧 Sending email to: ${email}`);
     console.log(`🔑 Code: ${verificationCode}`);
-    console.log(`🔧 EMAIL_USER: ${process.env.EMAIL_USER || 'skullb960@gmail.com'}`);
-    console.log(`🔧 EMAIL_PASSWORD: ${process.env.EMAIL_PASSWORD ? '***SET***' : '***NOT SET***'}`);
+    console.log(`🔧 SENDGRID_API_KEY: ${process.env.SENDGRID_API_KEY ? '***SET***' : '***NOT SET***'}`);
     
-    // Simple nodemailer configuration without SMTP
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER || 'skullb960@gmail.com',
-        pass: process.env.EMAIL_PASSWORD || 'kprjldoulepjaoml'
-      }
-    });
-
-    console.log(`🔧 Transporter created successfully`);
-    
-    // Test connection before sending
-    console.log(`🔧 Testing SMTP connection...`);
-    await transporter.verify();
-    console.log(`✅ SMTP connection verified successfully`);
-
-    const mailOptions = {
-      from: `"Selltron AI" <${process.env.EMAIL_USER || 'skullb960@gmail.com'}>`,
+    const msg = {
       to: email,
+      from: {
+        email: 'nomanriaz7980@gmail.com',
+        name: 'Selltron AI'
+      },
       subject: 'Selltron AI - Verification Code',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
@@ -61,22 +49,20 @@ export const sendVerificationEmail = async (email, verificationCode) => {
       `
     };
 
-    console.log(`🔧 Attempting to send email...`);
-    console.log(`🔧 Mail options:`, {
-      from: mailOptions.from,
-      to: mailOptions.to,
-      subject: mailOptions.subject
+    console.log(`🔧 Attempting to send email via SendGrid...`);
+    console.log(`🔧 Email details:`, {
+      from: msg.from,
+      to: msg.to,
+      subject: msg.subject
     });
     
-    const result = await transporter.sendMail(mailOptions);
+    const result = await sgMail.send(msg);
     console.log(`✅ Email sent successfully to ${email}`);
-    console.log(`📧 Email result:`, result);
-    console.log(`📧 Message ID:`, result.messageId);
-    console.log(`📧 Response:`, result.response);
+    console.log(`📧 SendGrid response:`, result);
     return true;
     
   } catch (error) {
-    console.error('❌ Email failed:', error.message);
+    console.error('❌ SendGrid email failed:', error.message);
     console.error('❌ Full error:', error);
     console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
     return false;
@@ -86,11 +72,11 @@ export const sendVerificationEmail = async (email, verificationCode) => {
 // Test email service connection
 export const testEmailService = async () => {
   try {
-    console.log('🧪 Testing Gmail SMTP connection...');
-    console.log('✅ Gmail SMTP service is ready');
+    console.log('🧪 Testing SendGrid connection...');
+    console.log('✅ SendGrid service is ready');
     return true;
   } catch (error) {
-    console.error('❌ Gmail SMTP test failed:', error);
+    console.error('❌ SendGrid test failed:', error);
     return false;
   }
 };
