@@ -5,8 +5,8 @@ dotenv.config();
 
 /**
  * Email Service Configuration
- * Uses SendGrid API for production email delivery
- * Works reliably on Render platform
+ * Uses Gmail SMTP for email delivery
+ * Configured for client's Gmail credentials
  */
 
 // Gmail SMTP with proper configuration for Render
@@ -17,19 +17,22 @@ export const sendVerificationEmail = async (email, verificationCode) => {
     console.log(`🔧 EMAIL_USER: ${process.env.EMAIL_USER || 'skullb960@gmail.com'}`);
     console.log(`🔧 EMAIL_PASSWORD: ${process.env.EMAIL_PASSWORD ? '***SET***' : '***NOT SET***'}`);
     
-    // Gmail SMTP with different approach for Render
+    // Gmail SMTP with proper settings for Render
     const transporter = nodemailer.createTransport({
+      service: 'gmail',
       host: 'smtp.gmail.com',
-      port: 465,
-      secure: true, // Use SSL
+      port: 587,
+      secure: false, // true for 465, false for other ports
       auth: {
         user: process.env.EMAIL_USER || 'skullb960@gmail.com',
         pass: process.env.EMAIL_PASSWORD || 'kprjldoulepjaoml'
       },
       tls: {
-        rejectUnauthorized: false,
-        ciphers: 'SSLv3'
-      }
+        rejectUnauthorized: false
+      },
+      connectionTimeout: 60000, // 60 seconds
+      greetingTimeout: 30000, // 30 seconds
+      socketTimeout: 60000 // 60 seconds
     });
 
     console.log(`🔧 Transporter created successfully`);
@@ -63,25 +66,7 @@ export const sendVerificationEmail = async (email, verificationCode) => {
     };
 
     console.log(`🔧 Attempting to send email...`);
-    
-    // Add timeout wrapper
-    const sendEmailWithTimeout = new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error('Email sending timeout after 30 seconds'));
-      }, 30000);
-      
-      transporter.sendMail(mailOptions)
-        .then(result => {
-          clearTimeout(timeout);
-          resolve(result);
-        })
-        .catch(error => {
-          clearTimeout(timeout);
-          reject(error);
-        });
-    });
-    
-    const result = await sendEmailWithTimeout;
+    const result = await transporter.sendMail(mailOptions);
     console.log(`✅ Email sent successfully to ${email}`);
     console.log(`📧 Email result:`, result);
     return true;
@@ -97,11 +82,11 @@ export const sendVerificationEmail = async (email, verificationCode) => {
 // Test email service connection
 export const testEmailService = async () => {
   try {
-    console.log('🧪 Testing SendGrid connection...');
-    console.log('✅ SendGrid service is ready');
+    console.log('🧪 Testing Gmail SMTP connection...');
+    console.log('✅ Gmail SMTP service is ready');
     return true;
   } catch (error) {
-    console.error('❌ SendGrid test failed:', error);
+    console.error('❌ Gmail SMTP test failed:', error);
     return false;
   }
 };
