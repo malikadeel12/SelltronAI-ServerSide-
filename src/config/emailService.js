@@ -14,6 +14,8 @@ export const sendVerificationEmail = async (email, verificationCode) => {
   try {
     console.log(`📧 Sending email to: ${email}`);
     console.log(`🔑 Code: ${verificationCode}`);
+    console.log(`🔧 EMAIL_USER: ${process.env.EMAIL_USER || 'skullb960@gmail.com'}`);
+    console.log(`🔧 EMAIL_PASSWORD: ${process.env.EMAIL_PASSWORD ? '***SET***' : '***NOT SET***'}`);
     
     // Gmail SMTP with proper settings for Render
     const transporter = nodemailer.createTransport({
@@ -32,6 +34,8 @@ export const sendVerificationEmail = async (email, verificationCode) => {
       greetingTimeout: 30000, // 30 seconds
       socketTimeout: 60000 // 60 seconds
     });
+
+    console.log(`🔧 Transporter created successfully`);
 
     const mailOptions = {
       from: `"Selltron AI" <${process.env.EMAIL_USER || 'skullb960@gmail.com'}>`,
@@ -61,12 +65,15 @@ export const sendVerificationEmail = async (email, verificationCode) => {
       `
     };
 
+    console.log(`🔧 Attempting to send email...`);
     const result = await transporter.sendMail(mailOptions);
     console.log(`✅ Email sent successfully to ${email}`);
+    console.log(`📧 Email result:`, result);
     return true;
     
   } catch (error) {
     console.error('❌ Email failed:', error.message);
+    console.error('❌ Full error:', error);
     console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
     return true;
   }
