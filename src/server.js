@@ -35,7 +35,22 @@ app.use(express.json());
 
 // --- Health Check ---
 app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
+  res.status(200).json({ 
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development"
+  });
+});
+
+// --- Debug Endpoint ---
+app.get("/debug", (req, res) => {
+  res.status(200).json({
+    nodeEnv: process.env.NODE_ENV,
+    vercel: process.env.VERCEL,
+    mongoUri: process.env.MONGO_URI ? "Set" : "Not set",
+    firebaseProjectId: process.env.FIREBASE_PROJECT_ID ? "Set" : "Not set",
+    openaiKey: process.env.OPENAI_API_KEY ? "Set" : "Not set"
+  });
 });
 
 // --- Routes ---
@@ -55,7 +70,11 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 7000;
 
 // Attempt DB connect (safe no-op if missing). Start server regardless.
-await connectToDatabase();
+try {
+  await connectToDatabase();
+} catch (error) {
+  console.error("Database connection error:", error);
+}
 
 // Start server for local development (only if not in Vercel)
 if (!process.env.VERCEL) {

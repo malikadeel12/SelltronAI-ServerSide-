@@ -6,3 +6,4 @@ node_modules
 src/firebasekey/serviceAccountKey.json
 src/apikey/sellpreadtor-16ce9ed3e743.json
 .DS_Store
+.vercel
