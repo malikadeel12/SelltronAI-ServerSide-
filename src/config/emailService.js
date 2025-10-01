@@ -30,15 +30,33 @@ export const sendVerificationEmail = async (email, verificationCode) => {
       },
       tls: {
         rejectUnauthorized: false
-      }
+      },
+      connectionTimeout: 10000, // 10 seconds
+      greetingTimeout: 5000, // 5 seconds
+      socketTimeout: 10000 // 10 seconds
     });
 
     console.log(`🔧 Transporter created successfully`);
     
-    // Test connection before sending
-    console.log(`🔧 Testing SMTP connection...`);
-    await transporter.verify();
-    console.log(`✅ SMTP connection verified successfully`);
+    // Skip SMTP verification for production (Render) to avoid hanging
+    if (process.env.NODE_ENV === 'production') {
+      console.log(`🔧 Production environment detected - skipping SMTP verification`);
+    } else {
+      // Test connection before sending with timeout (only for development)
+      console.log(`🔧 Testing SMTP connection...`);
+      try {
+        await Promise.race([
+          transporter.verify(),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('SMTP connection timeout')), 10000)
+          )
+        ]);
+        console.log(`✅ SMTP connection verified successfully`);
+      } catch (verifyError) {
+        console.error(`❌ SMTP connection failed:`, verifyError.message);
+        console.log(`🔄 Proceeding anyway - will try to send email...`);
+      }
+    }
 
     const mailOptions = {
       from: `"Selltron AI" <${process.env.EMAIL_USER || 'skullb960@gmail.com'}>`,
@@ -75,7 +93,14 @@ export const sendVerificationEmail = async (email, verificationCode) => {
       subject: mailOptions.subject
     });
     
-    const result = await transporter.sendMail(mailOptions);
+    // Send email with timeout
+    const result = await Promise.race([
+      transporter.sendMail(mailOptions),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Email sending timeout')), 15000)
+      )
+    ]);
+    
     console.log(`✅ Email sent successfully to ${email}`);
     console.log(`📧 Email result:`, result);
     console.log(`📧 Message ID:`, result.messageId);
@@ -177,7 +202,14 @@ export const sendVerificationEmailAlternative = async (email, verificationCode) 
       `
     };
     
-    const result = await transporter.sendMail(mailOptions);
+    // Send email with timeout
+    const result = await Promise.race([
+      transporter.sendMail(mailOptions),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Alternative email sending timeout')), 15000)
+      )
+    ]);
+    
     console.log(`✅ [ALTERNATIVE] Email sent successfully to ${email}`);
     return true;
     
