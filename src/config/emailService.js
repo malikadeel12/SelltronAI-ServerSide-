@@ -27,6 +27,11 @@ export const sendVerificationEmail = async (email, verificationCode) => {
     });
 
     console.log(`🔧 Transporter created successfully`);
+    
+    // Test connection before sending
+    console.log(`🔧 Testing SMTP connection...`);
+    await transporter.verify();
+    console.log(`✅ SMTP connection verified successfully`);
 
     const mailOptions = {
       from: `"Selltron AI" <${process.env.EMAIL_USER || 'skullb960@gmail.com'}>`,
@@ -57,9 +62,17 @@ export const sendVerificationEmail = async (email, verificationCode) => {
     };
 
     console.log(`🔧 Attempting to send email...`);
+    console.log(`🔧 Mail options:`, {
+      from: mailOptions.from,
+      to: mailOptions.to,
+      subject: mailOptions.subject
+    });
+    
     const result = await transporter.sendMail(mailOptions);
     console.log(`✅ Email sent successfully to ${email}`);
     console.log(`📧 Email result:`, result);
+    console.log(`📧 Message ID:`, result.messageId);
+    console.log(`📧 Response:`, result.response);
     return true;
     
   } catch (error) {
