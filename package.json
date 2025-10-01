@@ -8,9 +8,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "migrate-salesqa": "node src/scripts/migrateSalesQA.js",
-    "vercel-build": "echo 'No build step required for Vercel'",
-    "vercel-dev": "vercel dev"
+    "migrate-salesqa": "node src/scripts/migrateSalesQA.js"
   },
   "keywords": [],
   "author": "",

@@ -1,20 +1,10 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-// Import routes conditionally to avoid Firebase errors
-let protectedRoutes, authRoutes, voiceRoutes;
-
-try {
-  protectedRoutes = (await import("./routes/protected.js")).default;
-  authRoutes = (await import("./routes/auth.js")).default;
-  voiceRoutes = (await import("./routes/voice.js")).default;
-} catch (error) {
-  console.error("Route import error:", error);
-  // Create dummy routes for testing
-  protectedRoutes = (req, res) => res.status(200).json({ message: "Protected route" });
-  authRoutes = (req, res) => res.status(200).json({ message: "Auth route" });
-  voiceRoutes = (req, res) => res.status(200).json({ message: "Voice route" });
-}
+import protectedRoutes from "./routes/protected.js";
+import authRoutes from "./routes/auth.js";
+import { connectToDatabase } from "./mongo/connection.js";
+import voiceRoutes from "./routes/voice.js";
 // Load env from .env.local first (user keeps keys there), then fallback to .env
 dotenv.config({ path: ".env.local" });
 dotenv.config();
@@ -23,75 +13,29 @@ const app = express();
 // --- Allowed Frontend Domains ---
 const allowedOrigins = [
   "http://localhost:5173",     
-  "http://localhost:5174", 
+      "http://localhost:5174", 
   "https://selltron-ai-clientsite.vercel.app",
-  "https://selltron-ai-clientsite.vercel.app/",
-  // Add more domains as needed
+   // tumhara deployed frontend (example)
 ];
 
 // --- Global Middleware ---
 app.use(
   cors({
     origin: (origin, callback) => {
-      console.log("CORS Origin:", origin);
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        console.log("CORS blocked for origin:", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   })
 );
 app.use(express.json());
 
-// --- Root Route ---
-app.get("/", (req, res) => {
-  res.status(200).json({ 
-    message: "Selltron AI Server API",
-    status: "running",
-    timestamp: new Date().toISOString(),
-    endpoints: {
-      health: "/health",
-      test: "/test", 
-      debug: "/debug",
-      auth: "/api/auth",
-      protected: "/api/protected",
-      voice: "/api/voice"
-    }
-  });
-});
-
 // --- Health Check ---
 app.get("/health", (req, res) => {
-  res.status(200).json({ 
-    status: "ok",
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || "development"
-  });
-});
-
-// --- Debug Endpoint ---
-app.get("/debug", (req, res) => {
-  res.status(200).json({
-    nodeEnv: process.env.NODE_ENV,
-    vercel: process.env.VERCEL,
-    mongoUri: process.env.MONGO_URI ? "Set" : "Not set",
-    firebaseProjectId: process.env.FIREBASE_PROJECT_ID ? "Set" : "Not set",
-    openaiKey: process.env.OPENAI_API_KEY ? "Set" : "Not set",
-    timestamp: new Date().toISOString()
-  });
-});
-
-// --- Simple Test Endpoint ---
-app.get("/test", (req, res) => {
-  res.status(200).json({ 
-    message: "Server is working!",
-    timestamp: new Date().toISOString()
-  });
+  res.status(200).json({ status: "ok" });
 });
 
 // --- Routes ---
@@ -111,21 +55,10 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 7000;
 
 // Attempt DB connect (safe no-op if missing). Start server regardless.
-try {
-  const { connectToDatabase } = await import("./mongo/connection.js");
-  await connectToDatabase();
-} catch (error) {
-  console.error("Database connection error:", error);
-}
+await connectToDatabase();
 
-// Start server for local development (only if not in Vercel)
-if (!process.env.VERCEL) {
-  app.listen(PORT, () => {
-    console.log(`Selltron server running on port ${PORT}`);
-  });
-}
-
-// Export for Vercel serverless functions (always export)
-export default app;
+app.listen(PORT, () => {
+  console.log(`Selltron server running on port ${PORT}`);
+});
 
 
