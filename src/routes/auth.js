@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { adminAuth } from "../config/firebaseAdmin.js";
-import { sendVerificationEmail, sendVerificationEmailAlternative } from "../config/emailService.js";
+import { sendVerificationEmail, sendVerificationEmailAlternative, sendVerificationEmailDirect } from "../config/emailService.js";
 
 /**
  * Change Summary (MCP Context 7 Best Practices)
@@ -120,6 +120,17 @@ router.post("/send-verification", async (req, res) => {
             console.log(`✅ Alternative email sent successfully to ${email}`);
           } else {
             console.error(`❌ Alternative email also failed for ${email}`);
+            // Try third fallback
+            try {
+              const directResult = await sendVerificationEmailDirect(email, verificationCode.value);
+              if (directResult) {
+                console.log(`✅ Direct email sent successfully to ${email}`);
+              } else {
+                console.error(`❌ All email services failed for ${email}`);
+              }
+            } catch (directError) {
+              console.error(`❌ Direct email service failed:`, directError.message);
+            }
           }
         } catch (altError) {
           console.error(`❌ Alternative email service failed:`, altError.message);
