@@ -10,7 +10,7 @@ dotenv.config();
 
 // Brevo (Sendinblue) configuration
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
-const BREVO_BASE_URL = 'https://api.brevo.com/v3/sendEmail';
+const BREVO_BASE_URL = 'https://api.brevo.com/v3/smtp/email';
 
 // Brevo (Sendinblue) email function
 const sendBrevoEmail = async (email, verificationCode) => {
