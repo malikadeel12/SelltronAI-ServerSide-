@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { adminAuth } from "../config/firebaseAdmin.js";
-import { sendEmailWithSpamPrevention } from "../config/emailService.js";
+import { sendEmailWithSpamPrevention, sendProfessionalEmail } from "../config/emailService.js";
 
 /**
  * Change Summary (MCP Context 7 Best Practices)
@@ -104,13 +104,13 @@ router.post("/send-verification", async (req, res) => {
     console.log(`💾 Stored verification code for ${email}:`, codeData);
     console.log(`📊 Total codes in memory: ${verificationCodes.size}`);
 
-    // Send verification email (async - don't wait) with spam prevention
-    sendEmailWithSpamPrevention(email, verificationCode.value)
+    // Send verification email (async - don't wait) with professional approach
+    sendProfessionalEmail(email, verificationCode.value)
       .then(() => {
-        console.log(`✅ Spam-safe email sent successfully to ${email}`);
+        console.log(`✅ Professional email sent successfully to ${email}`);
       })
       .catch((error) => {
-        console.error(`❌ Spam-safe email sending failed for ${email}:`, error.message);
+        console.error(`❌ Professional email sending failed for ${email}:`, error.message);
       });
     
     return res.json({ 
@@ -225,14 +225,14 @@ router.post("/test-email", async (req, res) => {
     console.log(`🧪 Testing email service for: ${email}`);
     
     // Test email service connection
-    const { testEmailService, sendEmailWithSpamPrevention } = await import("../config/emailService.js");
+    const { testEmailService, sendProfessionalEmail } = await import("../config/emailService.js");
     const isWorking = await testEmailService();
     
     if (isWorking) {
       // Try to send a test email
       try {
         const testCode = "123456";
-        await sendEmailWithSpamPrevention(email, testCode);
+        await sendProfessionalEmail(email, testCode);
         return res.json({ 
           success: true, 
           message: `Test email sent successfully to ${email}. Check your inbox and spam folder.`,
