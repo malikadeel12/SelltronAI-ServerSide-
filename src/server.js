@@ -23,22 +23,27 @@ const app = express();
 // --- Allowed Frontend Domains ---
 const allowedOrigins = [
   "http://localhost:5173",     
-      "http://localhost:5174", 
+  "http://localhost:5174", 
   "https://selltron-ai-clientsite.vercel.app",
-   // tumhara deployed frontend (example)
+  "https://selltron-ai-clientsite.vercel.app/",
+  // Add more domains as needed
 ];
 
 // --- Global Middleware ---
 app.use(
   cors({
     origin: (origin, callback) => {
+      console.log("CORS Origin:", origin);
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.log("CORS blocked for origin:", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   })
 );
 app.use(express.json());
