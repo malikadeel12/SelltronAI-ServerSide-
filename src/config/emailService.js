@@ -39,17 +39,17 @@ const sendBrevoEmail = async (email, verificationCode) => {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Verification Code</title>
         </head>
-        <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
-          <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <body style="margin: 0; padding: 20px; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; padding: 30px;">
             
             <!-- Header -->
-            <div style="background-color: #D72638; padding: 30px; text-align: center;">
-              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: bold;">Selltron AI</h1>
-              <p style="color: #ffffff; margin: 5px 0 0 0; font-size: 16px;">Email Verification</p>
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #D72638; margin: 0; font-size: 24px; font-weight: bold;">Selltron AI</h1>
+              <p style="color: #666666; margin: 5px 0 0 0; font-size: 16px;">Email Verification</p>
             </div>
             
             <!-- Content -->
-            <div style="padding: 40px 30px;">
+            <div>
               <h2 style="color: #333333; margin: 0 0 20px 0; font-size: 20px; text-align: center;">Your Verification Code</h2>
               
               <div style="text-align: center; margin: 30px 0;">
@@ -65,7 +65,7 @@ const sendBrevoEmail = async (email, verificationCode) => {
             </div>
             
             <!-- Footer -->
-            <div style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e9ecef;">
+            <div style="margin-top: 30px; padding-top: 20px; text-align: center; border-top: 1px solid #e9ecef;">
               <p style="color: #666666; font-size: 12px; margin: 0;">© 2024 Selltron AI. All rights reserved.</p>
             </div>
           </div>
