@@ -233,126 +233,40 @@ This is an automated message. Please do not reply to this email.`,
   }
 };
 
-// Alternative email function with professional domain approach
+// Simple email function - no fancy template
 export const sendProfessionalEmail = async (email, verificationCode) => {
   try {
-    console.log(`📧 Sending professional email to: ${email}`);
+    console.log(`📧 Sending simple email to: ${email}`);
     
     const msg = {
       to: email,
       from: {
         email: 'nomanriaz7980@gmail.com',
-        name: 'Selltron AI Support'
+        name: 'Selltron AI'
       },
-      replyTo: 'nomanriaz7980@gmail.com',
-      subject: 'Account Verification - Selltron AI',
-      text: `Dear User,
+      subject: 'Your Verification Code',
+      text: `Your verification code is: ${verificationCode}
 
-Thank you for registering with Selltron AI.
+This code will expire in 5 minutes.
 
-Your verification code is: ${verificationCode}
-
-Please enter this code to complete your account verification.
-
-This code is valid for 5 minutes only.
-
-If you did not request this verification, please ignore this email.
+If you didn't request this code, please ignore this email.
 
 Best regards,
-Selltron AI Team
-support@selltron-ai.com`,
+Selltron AI Team`,
       html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Account Verification</title>
-        </head>
-        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f5f5f5;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
-            <tr>
-              <td align="center" style="padding: 20px 0;">
-                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                  
-                  <!-- Header -->
-                  <tr>
-                    <td style="background-color: #D72638; padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-                      <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: bold;">Selltron AI</h1>
-                      <p style="color: #ffffff; margin: 5px 0 0 0; font-size: 16px;">Account Verification</p>
-                    </td>
-                  </tr>
-                  
-                  <!-- Content -->
-                  <tr>
-                    <td style="padding: 40px 30px;">
-                      <h2 style="color: #333333; margin: 0 0 20px 0; font-size: 20px;">Verify Your Account</h2>
-                      
-                      <p style="color: #666666; font-size: 16px; line-height: 1.5; margin: 0 0 20px 0;">
-                        Thank you for registering with Selltron AI. Please use the verification code below to complete your account setup.
-                      </p>
-                      
-                      <div style="background-color: #f8f9fa; border: 2px solid #D72638; border-radius: 8px; padding: 25px; text-align: center; margin: 30px 0;">
-                        <span style="color: #D72638; font-size: 32px; font-weight: bold; letter-spacing: 4px; font-family: 'Courier New', monospace;">${verificationCode}</span>
-                      </div>
-                      
-                      <p style="color: #666666; font-size: 14px; line-height: 1.5; margin: 20px 0;">
-                        This verification code will expire in 5 minutes. If you did not request this verification, please ignore this email.
-                      </p>
-                    </td>
-                  </tr>
-                  
-                  <!-- Footer -->
-                  <tr>
-                    <td style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e9ecef; border-radius: 0 0 8px 8px;">
-                      <p style="color: #666666; font-size: 12px; margin: 0;">© 2024 Selltron AI. All rights reserved.</p>
-                      <p style="color: #999999; font-size: 11px; margin: 5px 0 0 0;">This is an automated message from Selltron AI.</p>
-                    </td>
-                  </tr>
-                  
-                </table>
-              </td>
-            </tr>
-          </table>
-        </body>
-        </html>
-      `,
-      // Professional headers
-      headers: {
-        'X-Mailer': 'Selltron AI Professional',
-        'X-Priority': '3',
-        'X-MSMail-Priority': 'Normal',
-        'Importance': 'Normal',
-        'X-Spam-Check': 'false',
-        'X-Anti-Abuse': 'Legitimate business email from Selltron AI',
-        'X-Entity-Ref-ID': `selltron-${Date.now()}`,
-        'List-Unsubscribe': '<mailto:unsubscribe@selltron-ai.com>',
-        'Return-Path': 'nomanriaz7980@gmail.com'
-      },
-      categories: ['account-verification', 'selltron-ai', 'security'],
-      customArgs: {
-        source: 'account-verification',
-        timestamp: new Date().toISOString(),
-        campaign: 'user-verification'
-      },
-      mailSettings: {
-        sandboxMode: { enable: false },
-        footer: { enable: false },
-        spamCheck: { enable: false }
-      },
-      trackingSettings: {
-        clickTracking: { enable: false },
-        openTracking: { enable: false },
-        subscriptionTracking: { enable: false }
-      }
+        <p>Your verification code is: <strong>${verificationCode}</strong></p>
+        <p>This code will expire in 5 minutes.</p>
+        <p>If you didn't request this code, please ignore this email.</p>
+        <p>Best regards,<br>Selltron AI Team</p>
+      `
     };
     
     const result = await sgMail.send(msg);
-    console.log(`✅ Professional email sent successfully to ${email}`);
+    console.log(`✅ Simple email sent successfully to ${email}`);
     return true;
     
   } catch (error) {
-    console.error('❌ Professional email failed:', error.message);
+    console.error('❌ Simple email failed:', error.message);
     return false;
   }
 };
