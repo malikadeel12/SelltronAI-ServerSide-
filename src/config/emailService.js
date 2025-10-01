@@ -17,22 +17,15 @@ export const sendVerificationEmail = async (email, verificationCode) => {
     console.log(`🔧 EMAIL_USER: ${process.env.EMAIL_USER || 'skullb960@gmail.com'}`);
     console.log(`🔧 EMAIL_PASSWORD: ${process.env.EMAIL_PASSWORD ? '***SET***' : '***NOT SET***'}`);
     
-    // Gmail SMTP with proper settings for Render
+    // Simple Gmail SMTP configuration
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
       host: 'smtp.gmail.com',
       port: 587,
-      secure: false, // true for 465, false for other ports
+      secure: false,
       auth: {
         user: process.env.EMAIL_USER || 'skullb960@gmail.com',
         pass: process.env.EMAIL_PASSWORD || 'kprjldoulepjaoml'
-      },
-      tls: {
-        rejectUnauthorized: false
-      },
-      connectionTimeout: 60000, // 60 seconds
-      greetingTimeout: 30000, // 30 seconds
-      socketTimeout: 60000 // 60 seconds
+      }
     });
 
     console.log(`🔧 Transporter created successfully`);
