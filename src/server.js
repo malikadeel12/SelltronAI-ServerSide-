@@ -57,8 +57,14 @@ const PORT = process.env.PORT || 7000;
 // Attempt DB connect (safe no-op if missing). Start server regardless.
 await connectToDatabase();
 
-app.listen(PORT, () => {
-  console.log(`Selltron server running on port ${PORT}`);
-});
+// Start server for local development (only if not in Vercel)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Selltron server running on port ${PORT}`);
+  });
+}
+
+// Export for Vercel serverless functions (always export)
+export default app;
 
 
