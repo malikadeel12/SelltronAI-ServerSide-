@@ -43,6 +43,23 @@ app.use(
 );
 app.use(express.json());
 
+// --- Root Route ---
+app.get("/", (req, res) => {
+  res.status(200).json({ 
+    message: "Selltron AI Server API",
+    status: "running",
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: "/health",
+      test: "/test", 
+      debug: "/debug",
+      auth: "/api/auth",
+      protected: "/api/protected",
+      voice: "/api/voice"
+    }
+  });
+});
+
 // --- Health Check ---
 app.get("/health", (req, res) => {
   res.status(200).json({ 
