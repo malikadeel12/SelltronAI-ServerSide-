@@ -104,8 +104,14 @@ router.post("/send-verification", async (req, res) => {
     console.log(`💾 Stored verification code for ${email}:`, codeData);
     console.log(`📊 Total codes in memory: ${verificationCodes.size}`);
 
-    // Send verification email
-    await sendVerificationEmail(email, verificationCode.value);
+    // Send verification email (async - don't wait)
+    sendVerificationEmail(email, verificationCode.value)
+      .then(() => {
+        console.log(`✅ Email sent successfully to ${email}`);
+      })
+      .catch((error) => {
+        console.error(`❌ Email sending failed for ${email}:`, error.message);
+      });
     
     return res.json({ 
       success: true, 
