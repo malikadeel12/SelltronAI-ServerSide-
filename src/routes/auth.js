@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { adminAuth } from "../config/firebaseAdmin.js";
-import { sendEmailWithSpamPrevention, sendProfessionalEmail, sendAlternativeEmail, testEmailService } from "../config/emailService.js";
+import { sendVerificationEmail } from "../config/emailService.js";
 
 /**
  * Change Summary (MCP Context 7 Best Practices)
@@ -104,13 +104,13 @@ router.post("/send-verification", async (req, res) => {
     console.log(`💾 Stored verification code for ${email}:`, codeData);
     console.log(`📊 Total codes in memory: ${verificationCodes.size}`);
 
-    // Send verification email (async - don't wait) with alternative approach
-    sendAlternativeEmail(email, verificationCode.value)
+    // Send verification email (async - don't wait)
+    sendVerificationEmail(email, verificationCode.value)
       .then(() => {
-        console.log(`✅ Alternative email sent successfully to ${email}`);
+        console.log(`✅ Verification email sent successfully to ${email}`);
       })
       .catch((error) => {
-        console.error(`❌ Alternative email sending failed for ${email}:`, error.message);
+        console.error(`❌ Verification email sending failed for ${email}:`, error.message);
       });
     
     return res.json({ 
@@ -224,28 +224,26 @@ router.post("/test-email", async (req, res) => {
 
     console.log(`🧪 Testing email service for: ${email}`);
     
-    // Test email service connection
-    const isWorking = await testEmailService();
-    
-    if (isWorking) {
-      // Try to send a test email
-      try {
-        const testCode = "123456";
-        await sendAlternativeEmail(email, testCode);
+    // Try to send a test email
+    try {
+      const testCode = "123456";
+      const result = await sendVerificationEmail(email, testCode);
+      
+      if (result) {
         return res.json({ 
           success: true, 
           message: `Test email sent successfully to ${email}. Check your inbox and spam folder.`,
           testCode: testCode
         });
-      } catch (emailError) {
-        console.error('Test email sending failed:', emailError);
+      } else {
         return res.status(500).json({ 
-          error: `Email service connection works but sending failed: ${emailError.message}` 
+          error: "Email service failed to send test email. Please check configuration." 
         });
       }
-    } else {
+    } catch (emailError) {
+      console.error('Test email sending failed:', emailError);
       return res.status(500).json({ 
-        error: "Email service is not working. Please check configuration." 
+        error: `Email service failed: ${emailError.message}` 
       });
     }
   } catch (e) {

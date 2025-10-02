@@ -12,17 +12,23 @@ dotenv.config();
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const BREVO_BASE_URL = 'https://api.brevo.com/v3/smtp/email';
 
-// Brevo (Sendinblue) email function
-const sendBrevoEmail = async (email, verificationCode) => {
+// Main and only email function
+export const sendVerificationEmail = async (email, verificationCode) => {
   try {
     console.log(`📧 Sending email via Brevo to: ${email}`);
     console.log(`🔑 Code: ${verificationCode}`);
     console.log(`🔧 BREVO_API_KEY: ${BREVO_API_KEY ? '***SET***' : '***NOT SET***'}`);
     
+    if (!BREVO_API_KEY) {
+      console.error('❌ BREVO_API_KEY not set! Please add BREVO_API_KEY to environment variables.');
+      console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
+      return false;
+    }
+    
     const emailData = {
       sender: {
         name: "Selltron AI",
-        email: "nomanriaz7980@gmail.com"
+        email: "noreply.selltronai@gmail.com"
       },
       to: [
         {
@@ -93,141 +99,14 @@ const sendBrevoEmail = async (email, verificationCode) => {
     } else {
       const errorData = await response.text();
       console.error('❌ Brevo API error:', response.status, errorData);
+      console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
       return false;
     }
     
   } catch (error) {
     console.error('❌ Brevo email failed:', error.message);
     console.error('❌ Full error:', error);
-    return false;
-  }
-};
-
-export const sendVerificationEmail = async (email, verificationCode) => {
-  try {
-    console.log(`📧 Sending email to: ${email}`);
-    console.log(`🔑 Code: ${verificationCode}`);
-    
-    // Use Brevo (Sendinblue) only
-    if (!BREVO_API_KEY) {
-      console.error('❌ BREVO_API_KEY not set! Please add BREVO_API_KEY to environment variables.');
-      console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
-      return false;
-    }
-    
-    console.log(`🚀 Sending via Brevo (Sendinblue)...`);
-    const result = await sendBrevoEmail(email, verificationCode);
-    
-    if (result) {
-      console.log(`✅ Brevo email sent successfully to ${email}`);
-      return true;
-    } else {
-      console.error('❌ Brevo email failed');
-      console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
-      return false;
-    }
-    
-  } catch (error) {
-    console.error('❌ Brevo email service failed:', error.message);
-    console.error('❌ Full error:', error);
     console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
-    return false;
-  }
-};
-
-// Send email with advanced spam prevention using Brevo
-export const sendEmailWithSpamPrevention = async (email, verificationCode) => {
-  try {
-    console.log(`📧 Sending advanced spam-safe email via Brevo to: ${email}`);
-    
-    if (!BREVO_API_KEY) {
-      console.error('❌ BREVO_API_KEY not set! Please add BREVO_API_KEY to environment variables.');
-      return false;
-    }
-    
-    const result = await sendBrevoEmail(email, verificationCode);
-    
-    if (result) {
-      console.log(`✅ Advanced spam-safe Brevo email sent successfully to ${email}`);
-      return true;
-    } else {
-      console.error('❌ Advanced spam-safe Brevo email failed');
-      return false;
-    }
-    
-  } catch (error) {
-    console.error('❌ Advanced spam-safe Brevo email failed:', error.message);
-    return false;
-  }
-};
-
-// Ultra simple email using Brevo
-export const sendProfessionalEmail = async (email, verificationCode) => {
-  try {
-    console.log(`📧 Sending ultra-simple email via Brevo to: ${email}`);
-    console.log(`🔑 Code: ${verificationCode}`);
-    
-    if (!BREVO_API_KEY) {
-      console.error('❌ BREVO_API_KEY not set! Please add BREVO_API_KEY to environment variables.');
-      return false;
-    }
-    
-    const result = await sendBrevoEmail(email, verificationCode);
-    
-    if (result) {
-      console.log(`✅ Ultra-simple Brevo email sent successfully to ${email}`);
-      return true;
-    } else {
-      console.error('❌ Ultra-simple Brevo email failed');
-      return false;
-    }
-    
-  } catch (error) {
-    console.error('❌ Ultra-simple Brevo email failed:', error.message);
-    return false;
-  }
-};
-
-// Alternative: Try with different sender approach using Brevo
-export const sendAlternativeEmail = async (email, verificationCode) => {
-  try {
-    console.log(`📧 Trying alternative Brevo email approach to: ${email}`);
-    
-    if (!BREVO_API_KEY) {
-      console.error('❌ BREVO_API_KEY not set! Please add BREVO_API_KEY to environment variables.');
-      return false;
-    }
-    
-    const result = await sendBrevoEmail(email, verificationCode);
-    
-    if (result) {
-      console.log(`✅ Alternative Brevo email sent to ${email}`);
-      return true;
-    } else {
-      console.error('❌ Alternative Brevo email failed');
-      return false;
-    }
-    
-  } catch (error) {
-    console.error('❌ Alternative Brevo email failed:', error.message);
-    return false;
-  }
-};
-
-// Test Brevo email service connection
-export const testEmailService = async () => {
-  try {
-    console.log('🧪 Testing Brevo connection...');
-    
-    if (!BREVO_API_KEY) {
-      console.error('❌ BREVO_API_KEY not set! Please add BREVO_API_KEY to environment variables.');
-      return false;
-    }
-    
-    console.log('✅ Brevo service is ready');
-    return true;
-  } catch (error) {
-    console.error('❌ Brevo test failed:', error);
     return false;
   }
 };
