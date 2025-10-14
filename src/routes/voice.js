@@ -261,7 +261,7 @@ router.post("/stt", upload.single("audio"), async (req, res) => {
 // --- Step 2: GPT Response (Real OpenAI API) ---
 router.post("/gpt", async (req, res) => {
   try {
-    const { transcript, mode = "sales" } = req.body || {};
+    const { transcript, mode = "sales", conversationHistory = [] } = req.body || {};
     
     if (!transcript) {
       return res.status(400).json({ error: "No transcript provided" });
@@ -334,17 +334,30 @@ router.post("/gpt", async (req, res) => {
             `Example ${index + 1}:\nQ: ${q.question}\nA: ${q.answers[0].text}\nB: ${q.answers[1].text}\nC: ${q.answers[2].text}\nCategory: ${q.category}`
           ).join('\n\n');
           
+          // Build conversation context for GPT
+          let conversationContext = "";
+          if (conversationHistory && conversationHistory.length > 0) {
+            conversationContext = "\n\nCONVERSATION HISTORY:\n";
+            conversationHistory.slice(-5).forEach((entry, index) => {
+              conversationContext += `Previous ${index + 1}:\n`;
+              conversationContext += `Customer: ${entry.userInput}\n`;
+              conversationContext += `Your Response: ${entry.predatorResponse}\n\n`;
+            });
+            conversationContext += "Use this conversation history to provide contextually relevant responses that build on previous interactions.\n";
+          }
+
           const systemPrompt = `You are an expert sales assistant. You have access to a database of proven sales responses. 
           Here are some related sales scenarios and their successful responses:
           ${contextQuestions}
+          ${conversationContext}
           
-          Your task: Analyze the customer's question and provide 3 persuasive sales responses (A, B, C format) that are relevant to their specific concern. Use the context above to understand the sales approach and tone.`;
+          Your task: Analyze the customer's question and provide 3 persuasive sales responses (A, B, C format) that are relevant to their specific concern. Use the context above to understand the sales approach and tone. Consider the conversation history to provide contextually relevant responses.`;
           
           const userPrompt = `Customer asked: "${userQuestion}". 
-          Based on the sales context above, provide 3 short, persuasive sales responses (A, B, C format) that directly address their question. Make sure each response is different and covers different angles of persuasion.`;
+          Based on the sales context above and conversation history, provide 3 short, persuasive sales responses (A, B, C format) that directly address their question. Make sure each response is different and covers different angles of persuasion.`;
 
           const completion = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
+            model: "gpt-4",
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: userPrompt }
@@ -357,11 +370,24 @@ router.post("/gpt", async (req, res) => {
         } else {
           // No related questions found, use general sales response
           console.log("❌ No related questions found, using general sales response");
-          const systemPrompt = "You are a sales assistant. Be persuasive and helpful. Keep responses short.";
-          const userPrompt = `Customer: "${transcript}". Give 3 short sales responses (A, B, C format).`;
+          
+          // Build conversation context for general sales response
+          let conversationContext = "";
+          if (conversationHistory && conversationHistory.length > 0) {
+            conversationContext = "\n\nCONVERSATION HISTORY:\n";
+            conversationHistory.slice(-5).forEach((entry, index) => {
+              conversationContext += `Previous ${index + 1}:\n`;
+              conversationContext += `Customer: ${entry.userInput}\n`;
+              conversationContext += `Your Response: ${entry.predatorResponse}\n\n`;
+            });
+            conversationContext += "Use this conversation history to provide contextually relevant responses that build on previous interactions.\n";
+          }
+          
+          const systemPrompt = `You are a sales assistant. Be persuasive and helpful. Keep responses short.${conversationContext}`;
+          const userPrompt = `Customer: "${transcript}". Give 3 short sales responses (A, B, C format). Consider the conversation history to provide contextually relevant responses.`;
 
           const completion = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
+            model: "gpt-4",
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: userPrompt }
@@ -375,8 +401,21 @@ router.post("/gpt", async (req, res) => {
       }
     } else {
       // For support mode, use original logic
-      const systemPrompt = "You are a helpful customer support assistant. Be empathetic, understanding, and provide clear solutions to customer problems.";
-      const userPrompt = `Customer said: "${transcript}". Please provide a helpful response that addresses their needs. Keep it concise and professional.`;
+      
+      // Build conversation context for support mode
+      let conversationContext = "";
+      if (conversationHistory && conversationHistory.length > 0) {
+        conversationContext = "\n\nCONVERSATION HISTORY:\n";
+        conversationHistory.slice(-5).forEach((entry, index) => {
+          conversationContext += `Previous ${index + 1}:\n`;
+          conversationContext += `Customer: ${entry.userInput}\n`;
+          conversationContext += `Your Response: ${entry.predatorResponse}\n\n`;
+        });
+        conversationContext += "Use this conversation history to provide contextually relevant responses that build on previous interactions.\n";
+      }
+      
+      const systemPrompt = `You are a helpful customer support assistant. Be empathetic, understanding, and provide clear solutions to customer problems.${conversationContext}`;
+      const userPrompt = `Customer said: "${transcript}". Please provide a helpful response that addresses their needs. Keep it concise and professional. Consider the conversation history to provide contextually relevant responses.`;
 
       const completion = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
@@ -451,7 +490,7 @@ router.post("/tts", async (req, res) => {
 router.post("/pipeline", upload.single("audio"), async (req, res) => {
   console.log("🚀 SERVER: Voice pipeline request received");
   try {
-    const { mode = "sales", language = "en-US" } = req.body || {};
+    const { mode = "sales", language = "en-US", conversationHistory = [] } = req.body || {};
     const voice = normalizeVoice(req.body?.voice || DEFAULT_VOICE);
     console.log("📋 SERVER: Pipeline params:", { mode, voice, language });
 
@@ -597,17 +636,30 @@ router.post("/pipeline", upload.single("audio"), async (req, res) => {
               `Example ${index + 1}:\nQ: ${q.question}\nA: ${q.answers[0].text}\nB: ${q.answers[1].text}\nC: ${q.answers[2].text}\nCategory: ${q.category}`
             ).join('\n\n');
             
+            // Build conversation context for GPT
+            let conversationContext = "";
+            if (conversationHistory && conversationHistory.length > 0) {
+              conversationContext = "\n\nCONVERSATION HISTORY:\n";
+              conversationHistory.slice(-5).forEach((entry, index) => {
+                conversationContext += `Previous ${index + 1}:\n`;
+                conversationContext += `Customer: ${entry.userInput}\n`;
+                conversationContext += `Your Response: ${entry.predatorResponse}\n\n`;
+              });
+              conversationContext += "Use this conversation history to provide contextually relevant responses that build on previous interactions.\n";
+            }
+            
             const systemPrompt = `You are an expert sales assistant. You have access to a database of proven sales responses. 
             Here are some related sales scenarios and their successful responses:
             ${contextQuestions}
+            ${conversationContext}
             
-            Your task: Analyze the customer's question and provide 3 persuasive sales responses (A, B, C format) that are relevant to their specific concern. Use the context above to understand the sales approach and tone.`;
+            Your task: Analyze the customer's question and provide 3 persuasive sales responses (A, B, C format) that are relevant to their specific concern. Use the context above to understand the sales approach and tone. Consider the conversation history to provide contextually relevant responses.`;
             
             const userPrompt = `Customer asked: "${userQuestion}". 
-            Based on the sales context above, provide 3 short, persuasive sales responses (A, B, C format) that directly address their question. Make sure each response is different and covers different angles of persuasion.`;
+            Based on the sales context above and conversation history, provide 3 short, persuasive sales responses (A, B, C format) that directly address their question. Make sure each response is different and covers different angles of persuasion.`;
 
             const completion = await openai.chat.completions.create({
-              model: "gpt-3.5-turbo",
+              model: "gpt-4",
               messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userPrompt }
@@ -620,11 +672,24 @@ router.post("/pipeline", upload.single("audio"), async (req, res) => {
           } else {
             // No related questions found, use general sales response
             console.log("❌ SERVER: No related questions found, using general sales response");
-            const systemPrompt = "You are a sales assistant. Be persuasive and helpful. Keep responses short.";
-            const userPrompt = `Customer: "${transcript}". Give 3 short sales responses (A, B, C format).`;
+            
+            // Build conversation context for general sales response
+            let conversationContext = "";
+            if (conversationHistory && conversationHistory.length > 0) {
+              conversationContext = "\n\nCONVERSATION HISTORY:\n";
+              conversationHistory.slice(-5).forEach((entry, index) => {
+                conversationContext += `Previous ${index + 1}:\n`;
+                conversationContext += `Customer: ${entry.userInput}\n`;
+                conversationContext += `Your Response: ${entry.predatorResponse}\n\n`;
+              });
+              conversationContext += "Use this conversation history to provide contextually relevant responses that build on previous interactions.\n";
+            }
+            
+            const systemPrompt = `You are a sales assistant. Be persuasive and helpful. Keep responses short.${conversationContext}`;
+            const userPrompt = `Customer: "${transcript}". Give 3 short sales responses (A, B, C format). Consider the conversation history to provide contextually relevant responses.`;
 
             const completion = await openai.chat.completions.create({
-              model: "gpt-3.5-turbo",
+              model: "gpt-4",
               messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userPrompt }
@@ -638,8 +703,21 @@ router.post("/pipeline", upload.single("audio"), async (req, res) => {
         }
       } else {
         // For support mode, use original logic
-        const systemPrompt = "You are a helpful customer support assistant. Be empathetic and provide clear solutions.";
-        const userPrompt = `Customer said: "${transcript}". Please provide a helpful response. Keep it concise and professional.`;
+        
+        // Build conversation context for support mode
+        let conversationContext = "";
+        if (conversationHistory && conversationHistory.length > 0) {
+          conversationContext = "\n\nCONVERSATION HISTORY:\n";
+          conversationHistory.slice(-5).forEach((entry, index) => {
+            conversationContext += `Previous ${index + 1}:\n`;
+            conversationContext += `Customer: ${entry.userInput}\n`;
+            conversationContext += `Your Response: ${entry.predatorResponse}\n\n`;
+          });
+          conversationContext += "Use this conversation history to provide contextually relevant responses that build on previous interactions.\n";
+        }
+        
+        const systemPrompt = `You are a helpful customer support assistant. Be empathetic and provide clear solutions.${conversationContext}`;
+        const userPrompt = `Customer said: "${transcript}". Please provide a helpful response. Keep it concise and professional. Consider the conversation history to provide contextually relevant responses.`;
 
         const completion = await openai.chat.completions.create({
           model: "gpt-3.5-turbo",
