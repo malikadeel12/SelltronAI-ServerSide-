@@ -307,28 +307,49 @@ router.post("/update-profile", async (req, res) => {
 
     // Verify the user's token
     const decoded = await adminAuth.verifyIdToken(token, true);
-    const { phoneNumber } = req.body;
+    const { phoneNumber, companyName } = req.body;
 
-    if (!phoneNumber) {
-      return res.status(400).json({ error: "Phone number is required" });
+    // Handle phone number update
+    if (phoneNumber) {
+      // Validate phone number format (more flexible)
+      const cleanPhone = phoneNumber.replace(/\s/g, '');
+      const phoneRegex = /^[\+]?[0-9][\d]{4,15}$/;
+      if (!phoneRegex.test(cleanPhone)) {
+        return res.status(400).json({ error: "Please enter a valid phone number (at least 5 digits)" });
+      }
+
+      // Update user profile in Firebase Auth
+      await adminAuth.updateUser(decoded.uid, {
+        phoneNumber: phoneNumber.trim()
+      });
     }
 
-    // Validate phone number format
-    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-    if (!phoneRegex.test(phoneNumber.replace(/\s/g, ''))) {
-      return res.status(400).json({ error: "Please enter a valid phone number" });
+    // Handle company name update
+    if (companyName) {
+      if (companyName.trim().length < 2) {
+        return res.status(400).json({ error: "Company name must be at least 2 characters long" });
+      }
+
+      // Update user profile in Firebase Auth
+      await adminAuth.updateUser(decoded.uid, {
+        displayName: companyName.trim()
+      });
     }
 
-    // Update user profile in Firebase Auth (if needed)
-    await adminAuth.updateUser(decoded.uid, {
-      phoneNumber: phoneNumber.trim()
-    });
-
-    return res.json({ 
+    // Return success response
+    const responseData = { 
       success: true, 
-      message: "Profile updated successfully",
-      phoneNumber: phoneNumber.trim()
-    });
+      message: "Profile updated successfully"
+    };
+
+    if (phoneNumber) {
+      responseData.phoneNumber = phoneNumber.trim();
+    }
+    if (companyName) {
+      responseData.companyName = companyName.trim();
+    }
+
+    return res.json(responseData);
   } catch (e) {
     console.error('Error updating profile:', e);
     if (e.code === 'auth/invalid-phone-number') {

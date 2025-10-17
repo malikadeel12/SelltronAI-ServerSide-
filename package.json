@@ -17,6 +17,7 @@
     "@aws-sdk/client-ses": "^3.899.0",
     "@google-cloud/speech": "^7.2.0",
     "@google-cloud/text-to-speech": "^6.3.0",
+    "@hubspot/api-client": "^13.4.0",
     "@sendgrid/mail": "^8.1.6",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
