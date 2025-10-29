@@ -1,0 +1,10 @@
+node_modules
+.env.local
+.env
+.env.production
+# Firebase keys ignore
+src/firebasekey/serviceAccountKey.json
+src/apikey/sellpreadtor-16ce9ed3e743.json
+src/apikey/google-key.json
+.DS_Sto
+.vercel
