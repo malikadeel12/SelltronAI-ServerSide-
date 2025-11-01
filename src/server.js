@@ -8,19 +8,21 @@ import authRoutes from "./routes/auth.js";
 import { connectToDatabase } from "./mongo/connection.js";
 import voiceRoutes, { speechClient } from "./routes/voice.js";
 import dns from "dns";
+
 dns.setDefaultResultOrder("ipv4first");
-// Load env from .env.local first (user keeps keys there), then fallback to .env
+
+// --- Load env from .env.local first, fallback to .env ---
 dotenv.config({ path: ".env.local" });
 dotenv.config();
+
 const app = express();
 const server = http.createServer(app);
 
 // --- Allowed Frontend Domains ---
 const allowedOrigins = [
-  "http://localhost:5173",     
-      "http://localhost:5174", 
-  "https://selltron-ai-clientsite.vercel.app",
-   // tumhara deployed frontend (example)
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://selltron-ai-clientsite.vercel.app", // deployed frontend
 ];
 
 // --- Global Middleware ---
@@ -38,7 +40,7 @@ app.use(
 );
 app.use(express.json());
 
-// --- Health Check ---
+// --- Health Check Route ---
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
@@ -50,19 +52,20 @@ app.use("/api/voice", voiceRoutes);
 
 // --- Error Handler ---
 app.use((err, req, res, next) => {
+  console.error("❌ Error:", err.message);
   res.status(err.statusCode || 500).json({
     error: err.message || "Internal Server Error",
   });
 });
 
-// --- Server Startup ---
+// --- Server Port ---
 const PORT = process.env.PORT || 7000;
 
-// Attempt DB connect (safe no-op if missing). Start server regardless.
+// --- Connect to DB (safe even if no DB vars set) ---
 await connectToDatabase();
 
 // --- WebSocket for Streaming STT ---
-const wss = new WebSocketServer({ server, path: "/ws/voice/stt" });
+const wss = new WebSocketServer({ noServer: true, path: "/ws/voice/stt" });
 
 wss.on("connection", (ws, req) => {
   try {
@@ -71,6 +74,7 @@ wss.on("connection", (ws, req) => {
     const encoding = (url.searchParams.get("encoding") || "WEBM_OPUS").toUpperCase();
     const sampleRateHertz = parseInt(url.searchParams.get("sampleRateHertz") || "48000", 10);
     const hintsParam = url.searchParams.get("hints");
+
     let speechContexts = [];
     if (hintsParam) {
       try {
@@ -78,11 +82,14 @@ wss.on("connection", (ws, req) => {
         if (Array.isArray(hints) && hints.length > 0) {
           speechContexts = [{ phrases: hints, boost: 16.0 }];
         }
-      } catch (_) {
-      }
+      } catch (_) {}
     }
 
-    console.log('🎤 BACKEND: WebSocket STT connection established:', { language, encoding, sampleRateHertz });
+    console.log("🎤 BACKEND: WebSocket STT connection established:", {
+      language,
+      encoding,
+      sampleRateHertz,
+    });
 
     const request = {
       config: {
@@ -103,9 +110,13 @@ wss.on("connection", (ws, req) => {
     const recognizeStream = speechClient
       .streamingRecognize(request)
       .on("error", (err) => {
-        console.error('🎤 BACKEND: Google STT stream error:', err.message);
-        try { ws.send(JSON.stringify({ type: "error", message: err.message })); } catch (_) {}
-        try { ws.close(); } catch (_) {}
+        console.error("🎤 BACKEND: Google STT stream error:", err.message);
+        try {
+          ws.send(JSON.stringify({ type: "error", message: err.message }));
+        } catch (_) {}
+        try {
+          ws.close();
+        } catch (_) {}
       })
       .on("data", (data) => {
         const results = data.results || [];
@@ -114,28 +125,31 @@ wss.on("connection", (ws, req) => {
         const alt = (result.alternatives && result.alternatives[0]) || {};
         const transcript = alt.transcript || "";
         const isFinal = !!result.isFinal;
-        console.log('🎤 BACKEND: Google STT transcript:', transcript, 'isFinal:', isFinal);
+        console.log("🎤 BACKEND: Google STT transcript:", transcript, "isFinal:", isFinal);
         try {
           ws.send(JSON.stringify({ type: "transcript", transcript, isFinal }));
         } catch (_) {}
       });
 
-    // Stream is ready to receive audio bytes
-    try { 
-      ws.send(JSON.stringify({ type: "ready" })); 
-      console.log('🎤 BACKEND: WebSocket STT ready signal sent');
+    // Send ready signal
+    try {
+      ws.send(JSON.stringify({ type: "ready" }));
+      console.log("🎤 BACKEND: WebSocket STT ready signal sent");
     } catch (_) {}
+
+    // Keep-alive ping every 20 seconds
+    const keepAlive = setInterval(() => {
+      if (ws.readyState === ws.OPEN) ws.ping();
+    }, 20000);
 
     ws.on("message", (message, isBinary) => {
       if (isBinary) {
-        // Write raw audio bytes to the stream
         recognizeStream.write(message);
       } else {
-        // Optionally handle control messages
         try {
           const payload = JSON.parse(message.toString());
-          if (payload && payload.type === "end") {
-            console.log('🎤 BACKEND: Received end signal, closing stream');
+          if (payload?.type === "end") {
+            console.log("🎤 BACKEND: Received end signal, closing stream");
             recognizeStream.end();
           }
         } catch (_) {}
@@ -143,20 +157,36 @@ wss.on("connection", (ws, req) => {
     });
 
     ws.on("close", () => {
-      console.log('🎤 BACKEND: WebSocket STT connection closed');
-      try { recognizeStream.end(); } catch (_) {}
+      clearInterval(keepAlive);
+      console.log("🎤 BACKEND: WebSocket STT connection closed");
+      try {
+        recognizeStream.end();
+      } catch (_) {}
     });
   } catch (err) {
-    console.error('🎤 BACKEND: WebSocket setup error:', err.message);
-    try { ws.send(JSON.stringify({ type: "error", message: err.message })); } catch (_) {}
-    try { ws.close(); } catch (_) {}
+    console.error("🎤 BACKEND: WebSocket setup error:", err.message);
+    try {
+      ws.send(JSON.stringify({ type: "error", message: err.message }));
+    } catch (_) {}
+    try {
+      ws.close();
+    } catch (_) {}
   }
 });
-server.on('upgrade', (req, socket, head) => {
-  console.log('⚙️ Upgrade request received at:', req.url);
+
+// --- Handle Upgrade for Render ---
+server.on("upgrade", (req, socket, head) => {
+  if (req.url.startsWith("/ws/voice/stt")) {
+    console.log("⚙️ Upgrade request received at:", req.url);
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      wss.emit("connection", ws, req);
+    });
+  } else {
+    socket.destroy();
+  }
 });
 
-
+// --- Start Server ---
 server.listen(PORT, () => {
-  console.log(`Selltron server running on port ${PORT}`);
+  console.log(`🚀 Selltron server running on port ${PORT}`);
 });
