@@ -152,6 +152,10 @@ wss.on("connection", (ws, req) => {
     try { ws.close(); } catch (_) {}
   }
 });
+server.on('upgrade', (req, socket, head) => {
+  console.log('⚙️ Upgrade request received at:', req.url);
+});
+
 
 server.listen(PORT, () => {
   console.log(`Selltron server running on port ${PORT}`);
