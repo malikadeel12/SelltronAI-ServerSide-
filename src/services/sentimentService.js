@@ -15,10 +15,8 @@ const languageClient = new language.LanguageServiceClient();
  */
 export async function analyzeSentiment(text) {
   try {
-    console.log("🔍 Sentiment Service: Analyzing text:", text.substring(0, 100) + "...");
 
     if (!text || text.trim().length === 0) {
-      console.log("⚠️ Sentiment Service: Empty text provided");
       return {
         score: 0,
         magnitude: 0,
@@ -37,11 +35,6 @@ export async function analyzeSentiment(text) {
     // Analyze sentiment
     const [result] = await languageClient.analyzeSentiment({ document });
     const sentiment = result.documentSentiment;
-
-    console.log("✅ Sentiment Service: Analysis complete:", {
-      score: sentiment.score,
-      magnitude: sentiment.magnitude
-    });
 
     // Determine color and sentiment based on score
     let color = 'yellow'; // default
@@ -66,7 +59,6 @@ export async function analyzeSentiment(text) {
     };
 
   } catch (error) {
-    console.error('❌ Sentiment Service Error:', error);
     
     // Return neutral sentiment on error
     return {

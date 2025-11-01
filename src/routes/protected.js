@@ -28,4 +28,3 @@ router.get("/admin", requireAuth, requireRole("admin"), (req, res) => {
 
 export default router;
 
-

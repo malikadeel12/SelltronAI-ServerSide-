@@ -1,16 +1,19 @@
 import express from "express";
+import http from "http";
+import { WebSocketServer } from "ws";
 import cors from "cors";
 import dotenv from "dotenv";
 import protectedRoutes from "./routes/protected.js";
 import authRoutes from "./routes/auth.js";
 import { connectToDatabase } from "./mongo/connection.js";
-import voiceRoutes from "./routes/voice.js";
+import voiceRoutes, { speechClient } from "./routes/voice.js";
 import dns from "dns";
 dns.setDefaultResultOrder("ipv4first");
 // Load env from .env.local first (user keeps keys there), then fallback to .env
 dotenv.config({ path: ".env.local" });
 dotenv.config();
 const app = express();
+const server = http.createServer(app);
 
 // --- Allowed Frontend Domains ---
 const allowedOrigins = [
@@ -47,7 +50,6 @@ app.use("/api/voice", voiceRoutes);
 
 // --- Error Handler ---
 app.use((err, req, res, next) => {
-  console.error("Unhandled Error:", err);
   res.status(err.statusCode || 500).json({
     error: err.message || "Internal Server Error",
   });
@@ -59,8 +61,88 @@ const PORT = process.env.PORT || 7000;
 // Attempt DB connect (safe no-op if missing). Start server regardless.
 await connectToDatabase();
 
-app.listen(PORT, () => {
-  console.log(`Selltron server running on port ${PORT}`);
+// --- WebSocket for Streaming STT ---
+const wss = new WebSocketServer({ server, path: "/ws/voice/stt" });
+
+wss.on("connection", (ws, req) => {
+  try {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const language = url.searchParams.get("language") || "en-US";
+    const encoding = (url.searchParams.get("encoding") || "WEBM_OPUS").toUpperCase();
+    const sampleRateHertz = parseInt(url.searchParams.get("sampleRateHertz") || "48000", 10);
+    const hintsParam = url.searchParams.get("hints");
+    let speechContexts = [];
+    if (hintsParam) {
+      try {
+        const hints = JSON.parse(hintsParam);
+        if (Array.isArray(hints) && hints.length > 0) {
+          speechContexts = [{ phrases: hints, boost: 16.0 }];
+        }
+      } catch (_) {
+      }
+    }
+
+    const request = {
+      config: {
+        encoding,
+        sampleRateHertz,
+        languageCode: language,
+        enableAutomaticPunctuation: true,
+        enableWordTimeOffsets: true,
+        enableWordConfidence: true,
+        model: "latest_long",
+        useEnhanced: true,
+        ...(speechContexts.length > 0 ? { speechContexts } : {}),
+      },
+      interimResults: true,
+      singleUtterance: false,
+    };
+
+    const recognizeStream = speechClient
+      .streamingRecognize(request)
+      .on("error", (err) => {
+        try { ws.send(JSON.stringify({ type: "error", message: err.message })); } catch (_) {}
+        try { ws.close(); } catch (_) {}
+      })
+      .on("data", (data) => {
+        const results = data.results || [];
+        if (results.length === 0) return;
+        const result = results[0];
+        const alt = (result.alternatives && result.alternatives[0]) || {};
+        const transcript = alt.transcript || "";
+        const isFinal = !!result.isFinal;
+        try {
+          ws.send(JSON.stringify({ type: "transcript", transcript, isFinal }));
+        } catch (_) {}
+      });
+
+    // Stream is ready to receive audio bytes
+    try { ws.send(JSON.stringify({ type: "ready" })); } catch (_) {}
+
+    ws.on("message", (message, isBinary) => {
+      if (isBinary) {
+        // Write raw audio bytes to the stream
+        recognizeStream.write(message);
+      } else {
+        // Optionally handle control messages
+        try {
+          const payload = JSON.parse(message.toString());
+          if (payload && payload.type === "end") {
+            recognizeStream.end();
+          }
+        } catch (_) {}
+      }
+    });
+
+    ws.on("close", () => {
+      try { recognizeStream.end(); } catch (_) {}
+    });
+  } catch (err) {
+    try { ws.send(JSON.stringify({ type: "error", message: err.message })); } catch (_) {}
+    try { ws.close(); } catch (_) {}
+  }
 });
 
-
+server.listen(PORT, () => {
+  console.log(`Selltron server running on port ${PORT}`);
+});

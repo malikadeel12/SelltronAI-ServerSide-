@@ -76,4 +76,3 @@ initializeFirebaseAdmin();
 // Export commonly used admin services
 export const adminAuth = admin.auth();
 
-

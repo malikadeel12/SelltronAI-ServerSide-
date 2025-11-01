@@ -69,9 +69,7 @@ const SENTIMENT_PROPERTIES = [
 export async function createCustomProperties() {
   const token = getHubspotToken();
   const hubspotClient = new Hubspot({ accessToken: token });
-  
-  console.log("🔧 Creating custom properties in HubSpot...");
-  
+
   for (const prop of CUSTOM_PROPERTIES) {
     try {
       // Try to create the property directly
@@ -85,25 +83,17 @@ export async function createCustomProperties() {
         groupName: "contactinformation" // Group under contact information
       });
       
-      console.log(`✅ Created property: ${prop.name} (${prop.label})`);
     } catch (error) {
       if (error.statusCode === 409) {
         // Property already exists (409 Conflict)
-        console.log(`✅ Property ${prop.name} already exists`);
       } else if (error.statusCode === 400 && error.body?.message?.includes("already exists")) {
         // Alternative check for existing property
-        console.log(`✅ Property ${prop.name} already exists`);
       } else {
-        console.error(`❌ Failed to create property ${prop.name}:`, error.message);
-        console.error(`   Status: ${error.statusCode}, Body:`, error.body);
       }
     }
   }
-  
-  console.log("🔧 Custom properties setup completed");
-  
+
   // Create sentiment properties
-  console.log("🔧 Creating sentiment custom properties in HubSpot...");
   for (const prop of SENTIMENT_PROPERTIES) {
     try {
       await hubspotClient.crm.properties.coreApi.create("contacts", {
@@ -114,19 +104,13 @@ export async function createCustomProperties() {
         description: prop.description,
         groupName: "contactinformation"
       });
-      console.log(`✅ Created property: ${prop.name} (${prop.label})`);
     } catch (error) {
       if (error.statusCode === 409) {
-        console.log(`✅ Property ${prop.name} already exists`);
       } else if (error.statusCode === 400 && error.body?.message?.includes("already exists")) {
-        console.log(`✅ Property ${prop.name} already exists`);
       } else {
-        console.error(`❌ Failed to create property ${prop.name}:`, error.message);
-        console.error(`   Status: ${error.statusCode}, Body:`, error.body);
       }
     }
   }
-  console.log("🔧 Sentiment custom properties setup completed");
 }
 
 function toHubspotProps({ name, email, phoneNumber, companyName }) {
@@ -166,11 +150,9 @@ export async function upsertHubspotContact({ name, email, phoneNumber, companyNa
       return response;
     }
   } catch (error) {
-    console.error("HubSpot upsert error:", error);
     throw error;
   }
 }
-
 
 export async function getContactByEmail(email) {
   if (!email) throw new Error("email required");
@@ -204,7 +186,6 @@ export async function updateContactWithKeyHighlights(email, keyHighlights) {
   }
 
   if (!keyHighlights || Object.keys(keyHighlights).length === 0) {
-    console.log("No key highlights to update");
     return null;
   }
 
@@ -216,12 +197,8 @@ export async function updateContactWithKeyHighlights(email, keyHighlights) {
     const existingContact = await getContactByEmail(email);
     
     if (!existingContact) {
-      console.log(`⚠️ No existing contact found with email: ${email} - skipping key highlights update`);
-      console.log(`   Key highlights will only sync to existing contacts in HubSpot`);
       return null;
     }
-
-    console.log(`✅ Found existing contact with email: ${email}, ID: ${existingContact.id}`);
 
     // Prepare properties to update
     const propertiesToUpdate = {};
@@ -242,11 +219,8 @@ export async function updateContactWithKeyHighlights(email, keyHighlights) {
 
     // Only update if there are properties to update
     if (Object.keys(propertiesToUpdate).length === 0) {
-      console.log("⚠️ No valid key highlights to update");
       return null;
     }
-
-    console.log(`💾 Updating existing contact ${existingContact.id} with key highlights:`, propertiesToUpdate);
 
     // Update the contact with key highlights
     const response = await hubspotClient.crm.contacts.basicApi.update(
@@ -254,10 +228,8 @@ export async function updateContactWithKeyHighlights(email, keyHighlights) {
       { properties: propertiesToUpdate }
     );
 
-    console.log(`✅ Successfully updated contact ${existingContact.id} with key highlights`);
     return response;
   } catch (error) {
-    console.error("Error updating contact with key highlights:", error);
     throw error;
   }
 }
@@ -269,7 +241,6 @@ export async function updateContactWithSentiment(email, sentimentData) {
   }
 
   if (!sentimentData || !sentimentData.color) {
-    console.log("No sentiment data to update");
     return null;
   }
 
@@ -281,12 +252,8 @@ export async function updateContactWithSentiment(email, sentimentData) {
     const existingContact = await getContactByEmail(email);
     
     if (!existingContact) {
-      console.log(`⚠️ No existing contact found with email: ${email} - skipping sentiment update`);
-      console.log(`   Sentiment will only sync to existing contacts in HubSpot`);
       return null;
     }
-
-    console.log(`✅ Found existing contact with email: ${email}, ID: ${existingContact.id}`);
 
     // Prepare properties to update
     const propertiesToUpdate = {};
@@ -304,11 +271,8 @@ export async function updateContactWithSentiment(email, sentimentData) {
 
     // Only update if there are properties to update
     if (Object.keys(propertiesToUpdate).length === 0) {
-      console.log("⚠️ No valid sentiment data to update");
       return null;
     }
-
-    console.log(`💾 Updating existing contact ${existingContact.id} with sentiment:`, propertiesToUpdate);
 
     try {
       // Update the contact with sentiment
@@ -317,14 +281,12 @@ export async function updateContactWithSentiment(email, sentimentData) {
         { properties: propertiesToUpdate }
       );
 
-      console.log(`✅ Successfully updated contact ${existingContact.id} with sentiment`);
       return response;
     } catch (updateError) {
       // If the error is due to missing custom properties, try to create them and retry
       if (updateError.statusCode === 400 && 
           (updateError.body?.message?.toLowerCase().includes('property') ||
            updateError.body?.message?.toLowerCase().includes('invalid property'))) {
-        console.log("⚠️ Custom properties may be missing. Attempting to create them...");
         
         try {
           // Try to create the sentiment properties
@@ -338,27 +300,22 @@ export async function updateContactWithSentiment(email, sentimentData) {
                 description: prop.description,
                 groupName: "contactinformation"
               });
-              console.log(`✅ Created property: ${prop.name}`);
             } catch (createError) {
               // Property might already exist, which is fine
               if (createError.statusCode !== 409 && 
                   !(createError.statusCode === 400 && createError.body?.message?.includes("already exists"))) {
-                console.error(`❌ Failed to create property ${prop.name}:`, createError.message);
               }
             }
           }
           
           // Retry the update after creating properties
-          console.log("🔄 Retrying contact update after creating properties...");
           const retryResponse = await hubspotClient.crm.contacts.basicApi.update(
             existingContact.id,
             { properties: propertiesToUpdate }
           );
-          console.log(`✅ Successfully updated contact ${existingContact.id} with sentiment after creating properties`);
           return retryResponse;
         } catch (retryError) {
           // If retry also fails, throw the original error
-          console.error("❌ Retry after creating properties failed:", retryError.message);
           throw updateError;
         }
       } else {
@@ -367,7 +324,6 @@ export async function updateContactWithSentiment(email, sentimentData) {
       }
     }
   } catch (error) {
-    console.error("Error updating contact with sentiment:", error);
     
     // Extract more detailed error information
     let errorMessage = error.message || "Unknown error";
@@ -397,14 +353,11 @@ export async function updateContactWithSentiment(email, sentimentData) {
     } else if (error.statusCode === 401 || error.statusCode === 403) {
       errorMessage = `HubSpot authentication failed: ${errorMessage}`;
     }
-    
-    console.error("Error details:", errorDetails);
-    
+
     const enhancedError = new Error(errorMessage);
     enhancedError.originalError = error;
     enhancedError.details = errorDetails;
     throw enhancedError;
   }
 }
-
 

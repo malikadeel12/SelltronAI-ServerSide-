@@ -16,7 +16,6 @@ class SalesQAService {
     const cached = this.cache.get(cacheKey);
     
     if (cached && (Date.now() - cached.timestamp) < this.cacheTimeout) {
-      console.log('🎯 Cache hit for query:', cacheKey);
       return cached.result;
     }
     
@@ -44,7 +43,6 @@ class SalesQAService {
       timestamp: Date.now()
     });
     
-    console.log('💾 Cached result for query:', cacheKey);
   }
 
   /**
@@ -54,10 +52,8 @@ class SalesQAService {
     if (query) {
       const cacheKey = this.normalizeQuery(query);
       this.cache.delete(cacheKey);
-      console.log('🗑️ Cleared cache for query:', cacheKey);
     } else {
       this.cache.clear();
-      console.log('🗑️ Cleared all cache');
     }
   }
 
@@ -65,7 +61,6 @@ class SalesQAService {
    * Force clear cache and search again
    */
   async findMatchingQuestionForce(query) {
-    console.log('🔄 Force searching without cache for:', query);
     this.clearCache(query);
     return await this.findMatchingQuestion(query);
   }
@@ -75,7 +70,6 @@ class SalesQAService {
    */
   clearAllCache() {
     this.cache.clear();
-    console.log('🗑️ Cleared all cache for fresh search');
   }
 
   /**
@@ -91,31 +85,26 @@ class SalesQAService {
 
       // Clean and normalize the query
       const cleanQuery = this.normalizeQuery(query);
-      console.log('🔍 Searching for:', cleanQuery);
       
       // Check cache first
       const cachedResult = this.getCachedResult(cleanQuery);
       if (cachedResult) {
         // Only use cached result if similarity is very high (exact or near-exact match)
         if (cachedResult.similarity && cachedResult.similarity >= 0.7) {
-          console.log('🎯 Using high similarity cached result');
           return cachedResult;
         } else {
-          console.log('🔄 Low similarity cached result, clearing cache and searching again');
           this.clearCache(cleanQuery);
         }
       }
       
       // Skip matching for casual conversation only (allow short queries for basic sales questions)
       if (this.isCasualConversation(cleanQuery)) {
-        console.log('⏭️ Skipping match for casual conversation:', cleanQuery);
         return null;
       }
       
       // Try exact match first (fastest)
       let match = await this.exactMatch(cleanQuery);
       if (match) {
-        console.log('🎯 Exact match found:', match.question);
         this.setCachedResult(cleanQuery, match);
         return match;
       }
@@ -123,40 +112,25 @@ class SalesQAService {
       // Try partial match (fast)
       match = await this.partialMatch(cleanQuery);
       if (match) {
-        console.log('🔍 Partial match found:', match.question);
         this.setCachedResult(cleanQuery, match);
         return match;
       }
 
-      // Try text search (medium speed)
-      match = await this.textSearch(cleanQuery);
-      if (match) {
-        console.log('📝 Text search match found:', match.question);
-        this.setCachedResult(cleanQuery, match);
-        return match;
+      // Skip expensive searches for 2-3 sec response time
+      // Only try text search for longer, more specific queries
+      if (cleanQuery.length > 20) {
+        match = await this.textSearch(cleanQuery);
+        if (match) {
+          this.setCachedResult(cleanQuery, match);
+          return match;
+        }
       }
 
-      // Only try expensive operations if no good match found yet
-      // Try fuzzy matching for incomplete or similar queries (slower)
-      match = await this.fuzzyMatch(cleanQuery);
-      if (match) {
-        console.log('🔍 Fuzzy match found:', match.question);
-        this.setCachedResult(cleanQuery, match);
-        return match;
-      }
+      // Skip fuzzy and fallback for speed
+      // Return null to trigger GPT faster
 
-      // Last resort: fallback search (slowest)
-      match = await this.fallbackSearch(cleanQuery);
-      if (match) {
-        console.log('🔄 Fallback match found:', match.question);
-        this.setCachedResult(cleanQuery, match);
-        return match;
-      }
-
-      console.log('❌ No matching question found for:', query);
       return null;
     } catch (error) {
-      console.error('Error in findMatchingQuestion:', error);
       return null;
     }
   }
@@ -249,38 +223,16 @@ class SalesQAService {
     const normalizedWords = normalizedQuery.split(' ').filter(word => word.length > 2);
     
     // Create fewer, more targeted search patterns for better performance
+    // Only top 3 patterns for speed
     const searchPatterns = [
-      // Original pattern with all words
-      words.map(word => this.escapeRegex(word)).join('.*'),
+      // Pattern with key words only (remove common words) - most important
+      words.filter(word => !this.isCommonWord(word)).map(word => this.escapeRegex(word)).join('.*'),
       
       // Normalized pattern (handles pre-sales, post-sales, etc.)
       normalizedWords.map(word => this.escapeRegex(word)).join('.*'),
       
-      // Pattern with key words only (remove common words) - most important
-      words.filter(word => !this.isCommonWord(word)).map(word => this.escapeRegex(word)).join('.*'),
-      
-      // Pattern with at least 70% of the words (more forgiving)
-      words.slice(0, Math.ceil(words.length * 0.7)).map(word => this.escapeRegex(word)).join('.*'),
-      
-      // Pattern for "what happens" variations
-      query.replace(/\bwhat\s+happened\b/gi, 'what happens').split(' ').filter(word => word.length > 2).map(word => this.escapeRegex(word)).join('.*'),
-      
-      // Pattern for sales-related variations
-      query.replace(/\btell\s+me\s+about\s+sale\b/gi, 'about sales').split(' ').filter(word => word.length > 2).map(word => this.escapeRegex(word)).join('.*'),
-      
-      // Pattern for competitor variations (competitors vs competitor's)
-      words.map(word => {
-        if (word.toLowerCase() === 'competitors') {
-          return '(competitors?|competitor\'s?)';
-        } else if (word.toLowerCase() === 'competitor') {
-          return '(competitor|competitors?)';
-        } else if (word.toLowerCase() === 'match') {
-          return '(match|matching)';
-        } else if (word.toLowerCase() === 'offer') {
-          return '(offer|offers)';
-        }
-        return this.escapeRegex(word);
-      }).join('.*')
+      // Original pattern with all words
+      words.map(word => this.escapeRegex(word)).join('.*')
     ];
 
     // Try each pattern and find the best match with early exit
@@ -294,7 +246,7 @@ class SalesQAService {
         "questions": 1,
         category: 1,
         description: 1
-      }).limit(20); // Limit results for better performance
+      }).limit(10); // Reduced to 10 for faster processing
 
       if (results && results.length > 0) {
         // Find the best matching question from all results
@@ -451,7 +403,6 @@ class SalesQAService {
 
       return bestMatch;
     } catch (error) {
-      console.error('Text search error:', error);
       return null;
     }
   }
@@ -488,7 +439,7 @@ class SalesQAService {
             description: 1
           }
         },
-        { $limit: 100 } // Limit to first 100 questions for performance
+        { $limit: 50 } // Reduced to 50 for faster processing
       ];
 
       const questions = await SalesQA.aggregate(pipeline);
@@ -540,7 +491,6 @@ class SalesQAService {
 
       return bestMatch;
     } catch (error) {
-      console.error('Fuzzy match error:', error);
       return null;
     }
   }
@@ -550,7 +500,6 @@ class SalesQAService {
    */
   async fallbackSearch(query) {
     try {
-      console.log('🔄 Trying fallback search for:', query);
       
       // Use aggregation pipeline with limit for better performance
       const pipeline = [
@@ -604,12 +553,10 @@ class SalesQAService {
       }
 
       if (bestMatch) {
-        console.log(`🔄 Fallback found match with similarity: ${bestScore.toFixed(3)}`);
       }
 
       return bestMatch;
     } catch (error) {
-      console.error('Fallback search error:', error);
       return null;
     }
   }
@@ -809,7 +756,6 @@ class SalesQAService {
     return synonyms[word.toLowerCase()] || [];
   }
 
-
   /**
    * Check if a word is a common word that doesn't add much meaning
    */
@@ -835,7 +781,6 @@ class SalesQAService {
     try {
       return await SalesQA.find({}, { category: 1, description: 1, "questions.question": 1 });
     } catch (error) {
-      console.error('Error getting categories:', error);
       return [];
     }
   }
@@ -851,7 +796,6 @@ class SalesQAService {
       ]);
       return result[0]?.totalQuestions || 0;
     } catch (error) {
-      console.error('Error getting question count:', error);
       return 0;
     }
   }
@@ -864,16 +808,13 @@ class SalesQAService {
   async findMultipleMatchingQuestions(queries) {
     try {
       if (!Array.isArray(queries) || queries.length === 0) {
-        console.log('❌ No queries provided or empty array');
         return [];
       }
 
-      console.log('🔍 Searching for multiple questions:', queries);
       const matches = [];
 
       for (const query of queries) {
         if (query && typeof query === 'string' && query.trim().length > 0) {
-          console.log(`🔍 Processing query: "${query.trim()}"`);
           const match = await this.findMatchingQuestion(query.trim());
           if (match) {
             matches.push({
@@ -884,23 +825,16 @@ class SalesQAService {
               description: match.description,
               similarity: match.similarity || 0
             });
-            console.log(`✅ Found match for: "${query.trim()}" -> "${match.question}" (similarity: ${match.similarity || 'N/A'})`);
           } else {
-            console.log(`❌ No match found for: "${query.trim()}"`);
           }
         } else {
-          console.log(`⚠️ Skipping invalid query: "${query}"`);
         }
       }
 
-      console.log(`🎯 Total matches found: ${matches.length}/${queries.length}`);
       if (matches.length === 0) {
-        console.log('⚠️ No matches found - this will trigger GPT fallback');
       }
       return matches;
     } catch (error) {
-      console.error('❌ Error in findMultipleMatchingQuestions:', error);
-      console.error('Stack trace:', error.stack);
       return [];
     }
   }
@@ -912,9 +846,8 @@ class SalesQAService {
    */
   async findRelatedQuestionsForGPT(query) {
     try {
-      console.log('🔍 Finding related questions for GPT analysis:', query);
       
-      // Get more questions from database for better context
+      // Get sample questions from database for context
       const pipeline = [
         { $unwind: "$questions" },
         { 
@@ -925,13 +858,12 @@ class SalesQAService {
             description: 1
           }
         },
-        { $limit: 50 } // Increased from 20 to 50 for better coverage
+        { $limit: 30 } // Reduced to 30 for faster processing
       ];
 
       const sampleQuestions = await SalesQA.aggregate(pipeline);
       
       if (sampleQuestions.length === 0) {
-        console.log('❌ No sample questions found for GPT context');
         return [];
       }
 
@@ -985,13 +917,10 @@ class SalesQAService {
         .sort((a, b) => b.similarity - a.similarity)
         .slice(0, 8);
 
-      console.log(`🎯 Found ${topRelated.length} related questions for GPT context`);
       if (topRelated.length > 0) {
-        console.log(`📊 Top related question: "${topRelated[0].question}" (similarity: ${topRelated[0].similarity.toFixed(3)})`);
       }
       return topRelated;
     } catch (error) {
-      console.error('❌ Error in findRelatedQuestionsForGPT:', error);
       return [];
     }
   }

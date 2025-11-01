@@ -17,14 +17,12 @@ export function extractUserQuestion(transcript) {
   }
 
   // Fallback: if no match found, return the original transcript
-  console.log("⚠️ Could not extract user question from prompt, using original transcript");
   return transcript;
 }
 
 // --- Helper function to detect key highlights from customer query ---
 export async function detectKeyHighlights(customerQuery, conversationHistory = []) {
   try {
-    console.log("🔍 Detecting key highlights from customer query:", customerQuery);
 
     const highlightsPrompt = `Analyze the following customer conversation and extract key highlights. Return ONLY a JSON object with these exact fields:
 
@@ -58,7 +56,6 @@ Extract only the key highlights mentioned by the customer in this specific query
     let keyHighlights;
     try {
       const rawData = JSON.parse(completion.choices[0].message.content);
-      console.log("🔍 GPT extracted key highlights:", rawData);
 
       // Clean up the data and filter out null values
       keyHighlights = {
@@ -73,18 +70,14 @@ Extract only the key highlights mentioned by the customer in this specific query
         Object.entries(keyHighlights).filter(([key, value]) => value !== null && value.trim() !== '')
       );
 
-      console.log("✅ Filtered key highlights:", filteredHighlights);
       return filteredHighlights;
     } catch (parseError) {
-      console.error('Failed to parse key highlights data:', parseError);
       return {};
     }
   } catch (error) {
-    console.error('Key highlights detection error:', error);
     
     // Check for quota exceeded
     if (error.status === 429 || error.code === 'insufficient_quota') {
-      console.log('⚠️ OpenAI quota exceeded in key highlights - skipping');
     }
     
     return {};

@@ -28,7 +28,6 @@ router.get("/whoami", async (req, res) => {
     const decoded = await adminAuth.verifyIdToken(token);
     return res.json({ uid: decoded.uid, email: decoded.email, role: decoded.role || "user" });
   } catch (e) {
-    console.error("/api/auth/whoami token verify error:", e?.message || e);
     return res.status(401).json({ error: "Invalid token" });
   }
 });
@@ -70,7 +69,6 @@ router.post("/check-email", async (req, res) => {
       }
     }
   } catch (e) {
-    console.error('Error checking email:', e);
     return res.status(500).json({ error: e.message });
   }
 });
@@ -104,16 +102,12 @@ router.post("/send-verification", async (req, res) => {
       attempts: 0
     };
     verificationCodes.set(email, codeData);
-    console.log(`💾 Stored verification code for ${email}:`, codeData);
-    console.log(`📊 Total codes in memory: ${verificationCodes.size}`);
 
     // Send verification email (async - don't wait)
     sendVerificationEmail(email, verificationCode.value)
       .then(() => {
-        console.log(`✅ Verification email sent successfully to ${email}`);
       })
       .catch((error) => {
-        console.error(`❌ Verification email sending failed for ${email}:`, error.message);
       });
     
     return res.json({ 
@@ -129,46 +123,36 @@ router.post("/send-verification", async (req, res) => {
 router.post("/verify-email", async (req, res) => {
   try {
     const { email, code } = req.body;
-    console.log(`🔍 Verifying email code for: ${email}, code: ${code}`);
     
     if (!email || !code) return res.status(400).json({ error: "Email and code are required" });
 
     const storedData = verificationCodes.get(email);
-    console.log(`📦 Stored data for ${email}:`, storedData);
-    console.log(`📊 Total codes in memory: ${verificationCodes.size}`);
     
     if (!storedData) {
-      console.log(`❌ No verification code found for email: ${email}`);
       return res.status(400).json({ error: "No verification code found for this email" });
     }
 
     // Check if code is expired (5 minutes)
     const timeDiff = Date.now() - storedData.timestamp;
-    console.log(`⏰ Time since code generation: ${Math.round(timeDiff / 1000)} seconds`);
     
     if (timeDiff > 5 * 60 * 1000) {
-      console.log(`⏰ Code expired for ${email}`);
       verificationCodes.delete(email);
       return res.status(400).json({ error: "Verification code has expired" });
     }
 
     // Check if too many attempts
     if (storedData.attempts >= 3) {
-      console.log(`🚫 Too many attempts for ${email}`);
       verificationCodes.delete(email);
       return res.status(400).json({ error: "Too many failed attempts. Please request a new code." });
     }
 
     // Verify code
-    console.log(`🔍 Comparing codes: stored="${storedData.code}" vs provided="${code}"`);
     if (storedData.code !== code) {
       storedData.attempts += 1;
-      console.log(`❌ Invalid code for ${email}, attempt ${storedData.attempts}`);
       return res.status(400).json({ error: "Invalid verification code" });
     }
 
     // Code is valid - remove from storage
-    console.log(`✅ Code verified successfully for ${email}`);
     verificationCodes.delete(email);
 
     return res.json({ 
@@ -176,7 +160,6 @@ router.post("/verify-email", async (req, res) => {
       message: "Email verified successfully" 
     });
   } catch (e) {
-    console.error('❌ Verification error:', e);
     return res.status(500).json({ error: e.message });
   }
 });
@@ -197,7 +180,6 @@ router.post("/set-email-verified", async (req, res) => {
       message: "Email verified status updated in Firebase" 
     });
   } catch (e) {
-    console.error('Error setting emailVerified:', e);
     return res.status(500).json({ error: e.message });
   }
 });
@@ -225,8 +207,6 @@ router.post("/test-email", async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: "Email is required" });
 
-    console.log(`🧪 Testing email service for: ${email}`);
-    
     // Try to send a test email
     try {
       const testCode = "123456";
@@ -244,13 +224,11 @@ router.post("/test-email", async (req, res) => {
         });
       }
     } catch (emailError) {
-      console.error('Test email sending failed:', emailError);
       return res.status(500).json({ 
         error: `Email service failed: ${emailError.message}` 
       });
     }
   } catch (e) {
-    console.error('Email service test failed:', e);
     return res.status(500).json({ error: e.message });
   }
 });
@@ -272,7 +250,6 @@ router.get("/user-info/:email", async (req, res) => {
       createdAt: userRecord.metadata.creationTime
     });
   } catch (e) {
-    console.error('Error getting user info:', e);
     return res.status(500).json({ error: e.message });
   }
 });
@@ -296,7 +273,6 @@ router.post("/verify-user-email", async (req, res) => {
       message: `Email verified for user: ${email}` 
     });
   } catch (e) {
-    console.error('Error verifying user email:', e);
     return res.status(500).json({ error: e.message });
   }
 });
@@ -320,11 +296,8 @@ router.post("/sync-to-hubspot", async (req, res) => {
       companyName: userRecord.displayName
     };
 
-    console.log('🔄 Syncing new user to HubSpot:', userData);
-    
     // Only sync to HubSpot if email is available
     if (!userData.email) {
-      console.log('⚠️ No email available for HubSpot sync, skipping');
       return res.json({ 
         success: true, 
         message: "User sync skipped - no email available",
@@ -334,16 +307,13 @@ router.post("/sync-to-hubspot", async (req, res) => {
     
     // Sync to HubSpot
     const hubspotResponse = await upsertHubspotContact(userData);
-    
-    console.log('✅ User synced to HubSpot successfully:', hubspotResponse.id);
-    
+
     return res.json({ 
       success: true, 
       message: "User synced to HubSpot successfully",
       hubspotContactId: hubspotResponse.id
     });
   } catch (e) {
-    console.error('Error syncing user to HubSpot:', e);
     return res.status(500).json({ error: "Failed to sync user to HubSpot" });
   }
 });
@@ -402,11 +372,8 @@ router.post("/update-profile", async (req, res) => {
         companyName: companyName ? companyName.trim() : currentCompany
       };
 
-      console.log('🔄 Syncing profile update to HubSpot:', hubspotData);
       await upsertHubspotContact(hubspotData);
-      console.log('✅ Profile synced to HubSpot successfully');
     } catch (hubspotError) {
-      console.error('⚠️ HubSpot sync failed (non-blocking):', hubspotError.message);
       // Don't fail the request if HubSpot sync fails
     }
 
@@ -425,7 +392,6 @@ router.post("/update-profile", async (req, res) => {
 
     return res.json(responseData);
   } catch (e) {
-    console.error('Error updating profile:', e);
     if (e.code === 'auth/invalid-phone-number') {
       return res.status(400).json({ error: "Invalid phone number format" });
     }

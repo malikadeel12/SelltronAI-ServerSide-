@@ -15,13 +15,8 @@ const BREVO_BASE_URL = 'https://api.brevo.com/v3/smtp/email';
 // Main and only email function
 export const sendVerificationEmail = async (email, verificationCode) => {
   try {
-    console.log(`📧 Sending email via Brevo to: ${email}`);
-    console.log(`🔑 Code: ${verificationCode}`);
-    console.log(`🔧 BREVO_API_KEY: ${BREVO_API_KEY ? '***SET***' : '***NOT SET***'}`);
     
     if (!BREVO_API_KEY) {
-      console.error('❌ BREVO_API_KEY not set! Please add BREVO_API_KEY to environment variables.');
-      console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
       return false;
     }
     
@@ -93,20 +88,13 @@ export const sendVerificationEmail = async (email, verificationCode) => {
 
     if (response.ok) {
       const result = await response.json();
-      console.log(`✅ Brevo email sent successfully to ${email}`);
-      console.log(`📧 Brevo response:`, result);
       return true;
     } else {
       const errorData = await response.text();
-      console.error('❌ Brevo API error:', response.status, errorData);
-      console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
       return false;
     }
     
   } catch (error) {
-    console.error('❌ Brevo email failed:', error.message);
-    console.error('❌ Full error:', error);
-    console.log(`🔧 VERIFICATION CODE for ${email}: ${verificationCode}`);
     return false;
   }
 };
