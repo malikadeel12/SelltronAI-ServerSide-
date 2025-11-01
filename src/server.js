@@ -61,14 +61,20 @@ app.use((err, req, res, next) => {
 // --- Server Port ---
 const PORT = process.env.PORT || 7000;
 
-// --- Connect to DB (safe even if no DB vars set) ---
+// --- Connect to DB ---
 await connectToDatabase();
 
 // --- WebSocket for Streaming STT ---
-const wss = new WebSocketServer({ noServer: true, path: "/ws/voice/stt" });
+const wss = new WebSocketServer({
+  noServer: true,
+  path: "/ws/voice/stt",
+  perMessageDeflate: false, // 🔧 Render-safe: Disable compression
+});
 
 wss.on("connection", (ws, req) => {
   try {
+    ws.binaryType = "arraybuffer"; // 🔧 ensure binary audio is handled properly
+
     const url = new URL(req.url, `http://${req.headers.host}`);
     const language = url.searchParams.get("language") || "en-US";
     const encoding = (url.searchParams.get("encoding") || "WEBM_OPUS").toUpperCase();
@@ -96,6 +102,7 @@ wss.on("connection", (ws, req) => {
         encoding,
         sampleRateHertz,
         languageCode: language,
+        audioChannelCount: 1, // 🔧 Prevent multi-channel errors
         enableAutomaticPunctuation: true,
         enableWordTimeOffsets: true,
         enableWordConfidence: true,
@@ -131,19 +138,21 @@ wss.on("connection", (ws, req) => {
         } catch (_) {}
       });
 
-    // Send ready signal
+    // --- Send ready signal ---
     try {
       ws.send(JSON.stringify({ type: "ready" }));
       console.log("🎤 BACKEND: WebSocket STT ready signal sent");
     } catch (_) {}
 
-    // Keep-alive ping every 20 seconds
+    // --- Keep-alive ping every 20 seconds ---
     const keepAlive = setInterval(() => {
       if (ws.readyState === ws.OPEN) ws.ping();
     }, 20000);
 
+    // --- Handle incoming audio ---
     ws.on("message", (message, isBinary) => {
       if (isBinary) {
+        console.log("🎤 BACKEND: Received binary chunk:", message.byteLength);
         recognizeStream.write(message);
       } else {
         try {
