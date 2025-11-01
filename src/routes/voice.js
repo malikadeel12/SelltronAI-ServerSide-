@@ -406,6 +406,8 @@ router.post("/pipeline", upload.none(), async (req, res) => {
     let { mode = "sales", language = "en-US", conversationHistory = [] } = req.body || {};
     const voice = getVoiceForLanguage(req.body?.voice || DEFAULT_VOICE, language);
     
+    console.log('🔄 BACKEND: Pipeline request received:', { mode, language, voice });
+    
     // Ensure conversationHistory is an array
     if (!Array.isArray(conversationHistory)) {
       try {
@@ -430,8 +432,11 @@ router.post("/pipeline", upload.none(), async (req, res) => {
     // === TRANSCRIPT SECTION (Use provided live transcript from WebSocket STT) ===
     transcript = req.body?.transcript || "";
     
+    console.log('🔄 BACKEND: Transcript received:', transcript.substring(0, 100) + '...');
+    
     if (transcript && transcript.trim()) {
     } else {
+        console.log('🔄 BACKEND: No transcript provided, returning empty response');
         return res.status(200).json({
           transcript: "",
           responseText: "",
@@ -447,8 +452,11 @@ router.post("/pipeline", upload.none(), async (req, res) => {
     // --- Sentiment Analysis ---
     let sentimentData = null;
     try {
+      console.log('🔄 BACKEND: Starting sentiment analysis...');
       sentimentData = await analyzeSentiment(transcript);
+      console.log('🔄 BACKEND: Sentiment analysis complete:', sentimentData);
     } catch (sentimentError) {
+      console.error('🔄 BACKEND: Sentiment analysis error:', sentimentError.message);
       sentimentData = null;
     }
 
@@ -466,12 +474,16 @@ router.post("/pipeline", upload.none(), async (req, res) => {
         // Parse multiple questions from user input
         const questions = parseMultipleQuestions(userQuestion);
 
+        console.log('🔄 BACKEND: Searching for matching questions in database...');
+
         // Search for matches for all questions
         // Only try normal search for speed (2-3 sec target)
         let matchedQuestions = await salesQAService.findMultipleMatchingQuestions(questions);
+        
+        console.log('🔄 BACKEND: Found', matchedQuestions.length, 'matching questions');
 
         if (matchedQuestions.length > 0) {
-
+          console.log('🔄 BACKEND: Using database responses (skip GPT for speed)');
           // Skip GPT call and use database responses directly for faster response
           responseText = matchedQuestions.map((match, index) => {
             // Get answers in correct order (A, B, C)
@@ -484,11 +496,14 @@ router.post("/pipeline", upload.none(), async (req, res) => {
           // No key highlights extraction for matched questions (skip GPT call for faster response)
           keyHighlights = {};
         } else {
+          console.log('🔄 BACKEND: No match found, searching related questions for GPT context...');
           // No matching question found, find related questions for GPT context
 
           // Extract user question for related search
           const userQuestion = extractUserQuestion(transcript);
           const relatedQuestions = await salesQAService.findRelatedQuestionsForGPT(userQuestion);
+
+          console.log('🔄 BACKEND: Found', relatedQuestions.length, 'related questions for GPT context');
 
           if (relatedQuestions.length > 0) {
 
@@ -526,6 +541,7 @@ router.post("/pipeline", upload.none(), async (req, res) => {
             
             userPrompt = addLanguageInstruction(userPrompt, language);
 
+            console.log('🔄 BACKEND: Calling GPT-4 with related context...');
             // Combined GPT call for response + key highlights
             const result = await getGPTResponseWithKeyHighlights(
               systemPrompt,
@@ -535,9 +551,11 @@ router.post("/pipeline", upload.none(), async (req, res) => {
               0.8,
               userQuestion
             );
+            console.log('🔄 BACKEND: GPT response received');
             responseText = result.responseText;
             keyHighlights = result.keyHighlights;
           } else {
+            console.log('🔄 BACKEND: No related questions, using general GPT response...');
             // No related questions found, use general sales response
 
             // Build conversation context for general sales response
@@ -559,6 +577,7 @@ router.post("/pipeline", upload.none(), async (req, res) => {
             let userPrompt = `Customer: "${transcript}". Give 3 short sales responses (A, B, C format). Consider the conversation history to provide contextually relevant responses.`;
             userPrompt = addLanguageInstruction(userPrompt, language);
 
+            console.log('🔄 BACKEND: Calling GPT-4 (general sales)...');
             // Combined GPT call for response + key highlights
             const result = await getGPTResponseWithKeyHighlights(
               systemPrompt,
@@ -568,11 +587,13 @@ router.post("/pipeline", upload.none(), async (req, res) => {
               0.7,
               userQuestion
             );
+            console.log('🔄 BACKEND: GPT response received');
             responseText = result.responseText;
             keyHighlights = result.keyHighlights;
           }
         }
       } else {
+        console.log('🔄 BACKEND: Using support mode GPT...');
         // For support mode, use original logic
 
         let systemPrompt = `You are a helpful customer support assistant. Be empathetic and provide clear solutions.`;
@@ -581,6 +602,7 @@ router.post("/pipeline", upload.none(), async (req, res) => {
         let userPrompt = `Customer said: "${transcript}". Please provide a helpful response. Keep it concise and professional.`;
         userPrompt = addLanguageInstruction(userPrompt, language);
 
+        console.log('🔄 BACKEND: Calling GPT-3.5 (support mode)...');
         const completion = await openai.chat.completions.create({
           model: "gpt-3.5-turbo",
           messages: [
@@ -591,10 +613,12 @@ router.post("/pipeline", upload.none(), async (req, res) => {
           temperature: 0.7,
         });
 
+        console.log('🔄 BACKEND: GPT support response received');
         responseText = completion.choices[0].message.content;
       }
 
     } catch (gptError) {
+      console.error('🔄 BACKEND: GPT error:', gptError.message);
       
       // Check for quota exceeded error
       if (gptError.status === 429 || gptError.code === 'insufficient_quota') {
@@ -612,6 +636,7 @@ Response C: I understand your concern. Let's explore the best solution for you.`
     // === TTS SECTION ===
     try {
       if (responseText) {
+        console.log('🔄 BACKEND: Starting TTS generation...');
 
         // Extract ONLY Response A text for TTS - SIMPLE & DIRECT METHOD
         let ttsText = "";
@@ -665,6 +690,7 @@ Response C: I understand your concern. Let's explore the best solution for you.`
         // If no valid text found, skip TTS
         if (!ttsText || ttsText.length === 0) {
           audioUrl = null; // Ensure audioUrl is null if no valid text
+          console.log('🔄 BACKEND: No valid TTS text, skipping audio generation');
         } else {
           // FINAL VERIFICATION: Log exact text being sent to TTS
           
@@ -683,11 +709,14 @@ Response C: I understand your concern. Let's explore the best solution for you.`
           const [ttsResponse] = await ttsPromise;
           const audioBase64 = ttsResponse.audioContent.toString("base64");
           audioUrl = `data:audio/mp3;base64,${audioBase64}`;
+          console.log('🔄 BACKEND: TTS audio generated successfully');
         }
       }
     } catch (ttsError) {
+      console.error('🔄 BACKEND: TTS error:', ttsError.message);
     }
 
+    console.log('🔄 BACKEND: Pipeline complete, sending response');
     return res.json({
       transcript,
       responseText,
@@ -698,6 +727,7 @@ Response C: I understand your concern. Let's explore the best solution for you.`
       success: true
     });
   } catch (error) {
+    console.error('🔄 BACKEND: Pipeline fatal error:', error.message);
     return res.status(500).json({ error: "Voice pipeline failed" });
   }
 });

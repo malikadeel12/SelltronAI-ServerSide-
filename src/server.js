@@ -82,6 +82,8 @@ wss.on("connection", (ws, req) => {
       }
     }
 
+    console.log('🎤 BACKEND: WebSocket STT connection established:', { language, encoding, sampleRateHertz });
+
     const request = {
       config: {
         encoding,
@@ -101,6 +103,7 @@ wss.on("connection", (ws, req) => {
     const recognizeStream = speechClient
       .streamingRecognize(request)
       .on("error", (err) => {
+        console.error('🎤 BACKEND: Google STT stream error:', err.message);
         try { ws.send(JSON.stringify({ type: "error", message: err.message })); } catch (_) {}
         try { ws.close(); } catch (_) {}
       })
@@ -111,13 +114,17 @@ wss.on("connection", (ws, req) => {
         const alt = (result.alternatives && result.alternatives[0]) || {};
         const transcript = alt.transcript || "";
         const isFinal = !!result.isFinal;
+        console.log('🎤 BACKEND: Google STT transcript:', transcript, 'isFinal:', isFinal);
         try {
           ws.send(JSON.stringify({ type: "transcript", transcript, isFinal }));
         } catch (_) {}
       });
 
     // Stream is ready to receive audio bytes
-    try { ws.send(JSON.stringify({ type: "ready" })); } catch (_) {}
+    try { 
+      ws.send(JSON.stringify({ type: "ready" })); 
+      console.log('🎤 BACKEND: WebSocket STT ready signal sent');
+    } catch (_) {}
 
     ws.on("message", (message, isBinary) => {
       if (isBinary) {
@@ -128,6 +135,7 @@ wss.on("connection", (ws, req) => {
         try {
           const payload = JSON.parse(message.toString());
           if (payload && payload.type === "end") {
+            console.log('🎤 BACKEND: Received end signal, closing stream');
             recognizeStream.end();
           }
         } catch (_) {}
@@ -135,9 +143,11 @@ wss.on("connection", (ws, req) => {
     });
 
     ws.on("close", () => {
+      console.log('🎤 BACKEND: WebSocket STT connection closed');
       try { recognizeStream.end(); } catch (_) {}
     });
   } catch (err) {
+    console.error('🎤 BACKEND: WebSocket setup error:', err.message);
     try { ws.send(JSON.stringify({ type: "error", message: err.message })); } catch (_) {}
     try { ws.close(); } catch (_) {}
   }
