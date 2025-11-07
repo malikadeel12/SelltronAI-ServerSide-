@@ -11,7 +11,7 @@ import dns from "dns";
 
 dns.setDefaultResultOrder("ipv4first");
 
-// --- Load env from .env.local first, fallback to .env ---
+// --- Load environment variables ---
 dotenv.config({ path: ".env.local" });
 dotenv.config();
 
@@ -22,150 +22,144 @@ const server = http.createServer(app);
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
-  "https://selltron-ai-clientsite.vercel.app",
+  "https://selltron-ai-clientsite.vercel.app", // your deployed frontend
 ];
 
 // --- Global Middleware ---
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) callback(null, true);
-      else callback(new Error("Not allowed by CORS"));
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
     },
     credentials: true,
   })
 );
+
 app.use(express.json());
 
+// --- Health Check ---
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 // --- Routes ---
-app.get("/health", (req, res) => res.status(200).json({ status: "ok" }));
 app.use("/api/auth", authRoutes);
 app.use("/api/protected", protectedRoutes);
 app.use("/api/voice", voiceRoutes);
 
 // --- Error Handler ---
 app.use((err, req, res, next) => {
-  console.error("❌ Error:", err.message);
-  res.status(err.statusCode || 500).json({ error: err.message });
+  res.status(err.statusCode || 500).json({
+    error: err.message || "Internal Server Error",
+  });
 });
 
-// --- Server Port ---
+// --- Server Startup ---
 const PORT = process.env.PORT || 7000;
 
-// --- Connect DB ---
+// Attempt DB connect (safe no-op if missing). Start server regardless.
 await connectToDatabase();
 
-// --- WebSocket for STT ---
-const wss = new WebSocketServer({
-  noServer: true,
-  path: "/ws/voice/stt",
-  perMessageDeflate: false,
-});
+// --- WebSocket for Streaming STT ---
+const wss = new WebSocketServer({ server, path: "/ws/voice/stt" });
 
 wss.on("connection", (ws, req) => {
-  ws.binaryType = "arraybuffer";
+  try {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const language = url.searchParams.get("language") || "en-US";
+    const encoding = (url.searchParams.get("encoding") || "WEBM_OPUS").toUpperCase();
+    const sampleRateHertz = parseInt(url.searchParams.get("sampleRateHertz") || "48000", 10);
 
-  console.log("🎤 BACKEND: WebSocket STT connection established");
+    const hintsParam = url.searchParams.get("hints");
+    let speechContexts = [];
 
-  let recognizeStream = null;
-  let configReceived = false;
-
-  // --- Keep alive ---
-  const keepAlive = setInterval(() => {
-    if (ws.readyState === ws.OPEN) ws.ping();
-  }, 20000);
-
-  ws.on("message", async (message, isBinary) => {
-    try {
-      // 🧩 Step 1: If JSON, handle config or end
-      if (!isBinary) {
-        const payload = JSON.parse(message.toString());
-
-        if (payload?.type === "config" && !configReceived) {
-          configReceived = true;
-          console.log("🎤 BACKEND: Received config:", payload.streamingConfig);
-
-          const { encoding, sampleRateHertz, languageCode } =
-            payload.streamingConfig.config || {};
-
-          const request = {
-            config: {
-              encoding: encoding || "WEBM_OPUS",
-              sampleRateHertz: sampleRateHertz || 48000,
-              languageCode: languageCode || "en-US",
-              enableAutomaticPunctuation: true,
-              enableWordTimeOffsets: true,
-              enableWordConfidence: true,
-              model: "latest_long",
-              useEnhanced: true,
-              audioChannelCount: 1,
-            },
-            interimResults: true,
-          };
-
-          recognizeStream = speechClient
-            .streamingRecognize(request)
-            .on("error", (err) => {
-              console.error("🎤 BACKEND: Google STT error:", err.message);
-              ws.send(JSON.stringify({ type: "error", message: err.message }));
-              try {
-                ws.close();
-              } catch (_) { }
-            })
-            .on("data", (data) => {
-              const result = data.results?.[0];
-              const transcript = result?.alternatives?.[0]?.transcript || "";
-              const isFinal = !!result?.isFinal;
-              if (transcript)
-                ws.send(
-                  JSON.stringify({ type: "transcript", transcript, isFinal })
-                );
-            });
-
-          // Send ready signal to frontend
-          ws.send(JSON.stringify({ type: "ready" }));
-          console.log("🎤 BACKEND: Ready signal sent to frontend ✅");
-          return;
+    if (hintsParam) {
+      try {
+        const hints = JSON.parse(hintsParam);
+        if (Array.isArray(hints) && hints.length > 0) {
+          speechContexts = [{ phrases: hints, boost: 16.0 }];
         }
-
-        if (payload?.type === "end") {
-          console.log("🎤 BACKEND: Received end signal, closing stream");
-          recognizeStream?.end();
-          return;
-        }
-      }
-
-      // 🎧 Step 2: Handle binary audio
-      if (isBinary && recognizeStream) {
-        recognizeStream.write(message);
-      }
-    } catch (err) {
-      console.error("🎤 BACKEND: Message error:", err.message);
+      } catch (_) {}
     }
-  });
 
-  ws.on("close", () => {
-    clearInterval(keepAlive);
-    console.log("🎤 BACKEND: WebSocket closed");
+
+    const request = {
+      config: {
+        encoding,
+        sampleRateHertz,
+        languageCode: language,
+        enableAutomaticPunctuation: true,
+        enableWordTimeOffsets: true,
+        enableWordConfidence: true,
+        model: "latest_long",
+        useEnhanced: true,
+        ...(speechContexts.length > 0 ? { speechContexts } : {}),
+      },
+      interimResults: true,
+      singleUtterance: false,
+    };
+
+    const recognizeStream = speechClient
+      .streamingRecognize(request)
+      .on("error", (err) => {
+        try {
+          ws.send(JSON.stringify({ type: "error", message: err.message }));
+        } catch (_) {}
+        try {
+          ws.close();
+        } catch (_) {}
+      })
+      .on("data", (data) => {
+        const results = data.results || [];
+        if (results.length === 0) return;
+
+        const result = results[0];
+        const alt = (result.alternatives && result.alternatives[0]) || {};
+        const transcript = alt.transcript || "";
+        const isFinal = !!result.isFinal;
+
+        try {
+          ws.send(JSON.stringify({ type: "transcript", transcript, isFinal }));
+        } catch (_) {}
+      });
+
+    // Stream ready to receive audio
     try {
-      recognizeStream?.end();
-    } catch (_) { }
-  });
-});
+      ws.send(JSON.stringify({ type: "ready" }));
+    } catch (_) {}
 
-// --- Handle Upgrade ---
-server.on("upgrade", (req, socket, head) => {
-  if (req.url.startsWith("/ws/voice/stt")) {
-    console.log("⚙️ Upgrade request received at:", req.url);
-    wss.handleUpgrade(req, socket, head, (ws) =>
-      wss.emit("connection", ws, req)
-    );
-  } else {
-    socket.destroy();
+    ws.on("message", (message, isBinary) => {
+      if (isBinary) {
+        recognizeStream.write(message);
+      } else {
+        try {
+          const payload = JSON.parse(message.toString());
+          if (payload && payload.type === "end") {
+            recognizeStream.end();
+          }
+        } catch (_) {}
+      }
+    });
+
+    ws.on("close", () => {
+      try {
+        recognizeStream.end();
+      } catch (_) {}
+    });
+  } catch (err) {
+    try {
+      ws.send(JSON.stringify({ type: "error", message: err.message }));
+    } catch (_) {}
+    try {
+      ws.close();
+    } catch (_) {}
   }
 });
 
-// --- Start Server ---
 server.listen(PORT, () => {
   console.log(`🚀 Selltron server running on port ${PORT}`);
 });

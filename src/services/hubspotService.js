@@ -179,6 +179,73 @@ export async function getContactByEmail(email) {
   }
 }
 
+// Function to get key highlights from HubSpot contact by email
+export async function getKeyHighlightsByEmail(email) {
+  if (!email) {
+    throw new Error("Email is required to get key highlights");
+  }
+
+  const token = getHubspotToken();
+  const hubspotClient = new Hubspot({ accessToken: token });
+
+  try {
+    // Find the contact by email with key highlights properties
+    const contact = await hubspotClient.crm.contacts.searchApi.doSearch({
+      filterGroups: [
+        {
+          filters: [
+            { propertyName: "email", operator: "EQ", value: email },
+          ],
+        },
+      ],
+      properties: [
+        "email", 
+        "budget_info", 
+        "timeline_info", 
+        "objections_info", 
+        "important_info"
+      ],
+      limit: 1,
+    });
+
+    if (!contact.results || contact.results.length === 0) {
+      return null;
+    }
+
+    const contactData = contact.results[0];
+    const properties = contactData.properties || {};
+
+    // Map HubSpot properties back to key highlights format
+    const keyHighlights = {};
+    
+    if (properties.budget_info) {
+      keyHighlights.budget = properties.budget_info;
+    }
+    if (properties.timeline_info) {
+      keyHighlights.timeline = properties.timeline_info;
+    }
+    if (properties.objections_info) {
+      keyHighlights.objections = properties.objections_info;
+    }
+    if (properties.important_info) {
+      keyHighlights.importantInfo = properties.important_info;
+    }
+
+    // Return null if no key highlights found
+    if (Object.keys(keyHighlights).length === 0) {
+      return null;
+    }
+
+    return keyHighlights;
+  } catch (error) {
+    // If contact not found, return null
+    if (error.statusCode === 404) {
+      return null;
+    }
+    throw error;
+  }
+}
+
 // Function to update HubSpot contact with key highlights
 export async function updateContactWithKeyHighlights(email, keyHighlights) {
   if (!email) {

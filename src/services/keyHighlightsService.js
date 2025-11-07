@@ -44,7 +44,7 @@ Customer query: "${customerQuery}"
 Extract only the key highlights mentioned by the customer in this specific query.`;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         { role: "system", content: "You are a key highlights extraction assistant. Extract only factual information mentioned by customers and return valid JSON." },
         { role: "user", content: highlightsPrompt }

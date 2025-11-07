@@ -1,15 +1,16 @@
-﻿﻿import { Router } from "express";
+﻿import { Router } from "express";
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
 import { SpeechClient } from "@google-cloud/speech";
 import textToSpeech from "@google-cloud/text-to-speech";
+import { TranslationServiceClient } from "@google-cloud/translate";
 import OpenAI from "openai";
 import fs from "fs";
 import salesQAService from "../services/salesQAService.js";
 import { extractUserQuestion, detectKeyHighlights } from "../services/keyHighlightsService.js";
 import { extractCustomerInfoFromTranscript } from "../services/crmService.js";
-import { getContactByEmail, upsertHubspotContact, createCustomProperties, updateContactWithKeyHighlights, updateContactWithSentiment } from "../services/hubspotService.js";
+import { getContactByEmail, upsertHubspotContact, createCustomProperties, updateContactWithKeyHighlights, updateContactWithSentiment, getKeyHighlightsByEmail } from "../services/hubspotService.js";
 import { analyzeSentiment } from "../services/sentimentService.js";
 import { Client as Hubspot } from "@hubspot/api-client";
 
@@ -125,6 +126,161 @@ function extractJSONFromResponse(text) {
 }
 
 // --- Helper function for combined GPT call (response + key highlights) ---
+// Streaming GPT function that triggers TTS early when Response A is detected
+async function getGPTResponseWithKeyHighlightsStreaming(systemPrompt, userPrompt, model, maxTokens, temperature, customerQuery, onEarlyResponse, ttsClient, voice, language) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Add key highlights extraction instruction to system prompt
+      const enhancedSystemPrompt = `${systemPrompt}
+
+CRITICAL: You must return your response as a valid JSON object with the following EXACT structure (no additional text, only valid JSON):
+{
+  "response": "Your sales responses in A, B, C format (e.g., 'Response A: ...\\nResponse B: ...\\nResponse C: ...')",
+  "keyHighlights": {
+    "budget": "budget information explicitly mentioned by customer" or null,
+    "timeline": "timeline information explicitly mentioned by customer" or null,
+    "objections": "customer objections or concerns explicitly mentioned" or null,
+    "importantInfo": "other important information explicitly mentioned" or null
+  }
+}
+
+IMPORTANT for key highlights: 
+- Only extract information that is EXPLICITLY mentioned by the customer in their query
+- Return null for fields where no relevant information is found
+- Keep extracted text concise but meaningful
+- Do NOT make assumptions or add information not mentioned
+- The "response" field must contain your sales responses in the exact format: "Response A: ...\\nResponse B: ...\\nResponse C: ..."
+- Return ONLY the JSON object, no additional text or markdown formatting`;
+
+      let streamedText = "";
+      let earlyTtsTriggered = false;
+      let responseAStartIndex = -1;
+      let responseAText = "";
+      const MIN_WORDS_FOR_EARLY_TTS = 25; // Minimum words to trigger early TTS
+
+      const stream = await openai.chat.completions.create({
+        model: model,
+        messages: [
+          { role: "system", content: enhancedSystemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        max_tokens: maxTokens + 150,
+        temperature: temperature,
+        stream: true,
+      });
+
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || "";
+        if (content) {
+          streamedText += content;
+
+          // Check if we've found "Response A:" and haven't triggered early TTS yet
+          if (!earlyTtsTriggered) {
+            const lowerText = streamedText.toLowerCase();
+            const responseAIndex = lowerText.indexOf("response a:");
+            
+            if (responseAIndex !== -1 && responseAStartIndex === -1) {
+              responseAStartIndex = responseAIndex;
+            }
+
+            // If we found Response A and have collected enough text
+            if (responseAStartIndex !== -1) {
+              // Extract text after "Response A:"
+              const afterResponseA = streamedText.substring(responseAStartIndex + "Response A:".length);
+              
+              // Check if we have enough words (rough estimate: 5 chars per word)
+              const wordCount = afterResponseA.trim().split(/\s+/).length;
+              
+              if (wordCount >= MIN_WORDS_FOR_EARLY_TTS) {
+                // Extract Response A text (stop before Response B or C)
+                let ttsText = afterResponseA;
+                const responseBIndex = ttsText.toLowerCase().indexOf("response b:");
+                const responseCIndex = ttsText.toLowerCase().indexOf("response c:");
+                
+                if (responseBIndex !== -1) {
+                  ttsText = ttsText.substring(0, responseBIndex);
+                } else if (responseCIndex !== -1) {
+                  ttsText = ttsText.substring(0, responseCIndex);
+                }
+                
+                // Clean up the text
+                ttsText = ttsText.trim().replace(/\r\n/g, " ").replace(/\n/g, " ").replace(/\s+/g, " ").trim();
+                
+                // Make sure we have valid text without Response B/C references
+                if (ttsText && 
+                    ttsText.length > 10 && 
+                    !ttsText.toLowerCase().includes("response b") && 
+                    !ttsText.toLowerCase().includes("response c")) {
+                  
+                  earlyTtsTriggered = true;
+                  responseAText = ttsText;
+                  
+                  // Generate TTS early in background (don't wait)
+                  const earlyTtsStartTime = Date.now();
+                  (async () => {
+                    try {
+                      const ttsVoice = getVoiceForLanguage(voice, language);
+                      const ttsRequest = {
+                        input: { text: ttsText },
+                        voice: {
+                          languageCode: language,
+                          name: ttsVoice,
+                          ssmlGender: "NEUTRAL",
+                        },
+                        audioConfig: { audioEncoding: "MP3" },
+                      };
+
+                      const [ttsResponse] = await ttsClient.synthesizeSpeech(ttsRequest);
+                      const audioBase64 = ttsResponse.audioContent.toString("base64");
+                      const audioUrl = `data:audio/mp3;base64,${audioBase64}`;
+                      
+                      const earlyTtsTime = Date.now() - earlyTtsStartTime;
+                      console.log(`⚡ BACKEND: Early TTS generated in ${earlyTtsTime}ms (triggered at ${wordCount} words)`);
+                      
+                      // Call the callback with early audio
+                      if (onEarlyResponse) {
+                        onEarlyResponse(audioUrl);
+                      }
+                    } catch (ttsError) {
+                      console.error('🔄 BACKEND: Early TTS error:', ttsError.message);
+                    }
+                  })();
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // Parse the complete response
+      const rawResponse = streamedText.trim();
+      const result = extractJSONFromResponse(rawResponse);
+      
+      if (result && result.response) {
+        const responseText = result.response;
+        const keyHighlights = result.keyHighlights || {};
+        
+        const filteredHighlights = Object.fromEntries(
+          Object.entries(keyHighlights).filter(([key, value]) => 
+            value !== null && value !== undefined && String(value).trim() !== ''
+          )
+        );
+
+        resolve({
+          responseText,
+          keyHighlights: filteredHighlights,
+          earlyTtsTriggered
+        });
+      } else {
+        console.error('🔄 BACKEND: Failed to parse JSON from GPT response. Result:', result);
+        reject(new Error("Response not in expected JSON format"));
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
 async function getGPTResponseWithKeyHighlights(systemPrompt, userPrompt, model, maxTokens, temperature, customerQuery) {
   try {
     // Add key highlights extraction instruction to system prompt
@@ -180,6 +336,7 @@ IMPORTANT for key highlights:
       };
     } else {
       // Failed to parse JSON - return empty response
+      console.error('🔄 BACKEND: Failed to parse JSON from GPT response. Result:', result);
       throw new Error("Response not in expected JSON format");
     }
   } catch (error) {
@@ -229,6 +386,7 @@ console.log("🔑 Google Cloud Service Account Configuration:");
 // Let Google Cloud SDK automatically use GOOGLE_APPLICATION_CREDENTIALS
 export const speechClient = new SpeechClient();
 const ttsClient = new textToSpeech.TextToSpeechClient();
+const translateClient = new TranslationServiceClient();
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -293,6 +451,74 @@ function addLanguageInstruction(prompt, language = "en-US") {
     return prompt + "\n\nIMPORTANT: Respond ONLY in German. All responses must be in German language.";
   }
   return prompt;
+}
+
+// --- Translation Helper Functions ---
+/**
+ * Translate text from one language to another using Google Cloud Translation API
+ * @param {string} text - Text to translate
+ * @param {string} targetLanguage - Target language code (e.g., 'en', 'de')
+ * @param {string} sourceLanguage - Source language code (e.g., 'en', 'de'). If not provided, will auto-detect
+ * @returns {Promise<string>} - Translated text
+ */
+async function translateText(text, targetLanguage, sourceLanguage = null) {
+  try {
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      return text;
+    }
+
+    // If source and target are the same, return original text
+    if (sourceLanguage && sourceLanguage === targetLanguage) {
+      return text;
+    }
+
+    const projectId = serviceAccount?.project_id || process.env.GOOGLE_CLOUD_PROJECT_ID;
+    if (!projectId) {
+      console.error('🔄 BACKEND: Translation failed - No project ID found');
+      return text; // Return original text if translation fails
+    }
+
+    const request = {
+      parent: `projects/${projectId}/locations/global`,
+      contents: [text],
+      mimeType: 'text/plain',
+      targetLanguageCode: targetLanguage,
+    };
+
+    // Add source language if provided
+    if (sourceLanguage) {
+      request.sourceLanguageCode = sourceLanguage;
+    }
+
+    const [response] = await translateClient.translateText(request);
+    
+    if (response.translations && response.translations.length > 0) {
+      return response.translations[0].translatedText;
+    }
+
+    return text; // Return original if translation fails
+  } catch (error) {
+    console.error('🔄 BACKEND: Translation error:', error.message);
+    return text; // Return original text on error
+  }
+}
+
+/**
+ * Translate text from German to English
+ * @param {string} text - German text to translate
+ * @returns {Promise<string>} - English translated text
+ */
+async function translateGermanToEnglish(text) {
+  return translateText(text, 'en', 'de');
+}
+
+/**
+ * Translate text from English to German
+ * @param {string} text - English text to translate
+ * @returns {Promise<string>} - German translated text
+ */
+async function translateEnglishToGerman(text) {
+  return translateText(text, 'de', 'en');
 }
 
 // --- Config: available voices and modes ---
@@ -402,11 +628,12 @@ router.post("/tts", async (req, res) => {
 
 // --- Combined Pipeline (Real APIs) ---
 router.post("/pipeline", upload.none(), async (req, res) => {
+  const pipelineStartTime = Date.now();
   try {
     let { mode = "sales", language = "en-US", conversationHistory = [] } = req.body || {};
     const voice = getVoiceForLanguage(req.body?.voice || DEFAULT_VOICE, language);
+    console.log(`🔄 BACKEND: Pipeline started at ${new Date().toISOString()}`);
     
-    console.log('🔄 BACKEND: Pipeline request received:', { mode, language, voice });
     
     // Ensure conversationHistory is an array
     if (!Array.isArray(conversationHistory)) {
@@ -427,226 +654,28 @@ router.post("/pipeline", upload.none(), async (req, res) => {
     let transcript = "";
     let responseText = "";
     let audioUrl = null;
-
-    // ==========================================================
-    // === TRANSCRIPT SECTION (Use provided live transcript from WebSocket STT) ===
-    transcript = req.body?.transcript || "";
     
-    console.log('🔄 BACKEND: Transcript received:', transcript.substring(0, 100) + '...');
+    // ==========================================================
+    // === EARLY TTS TRACKING (for streaming GPT) ===
+    // Shared variable to track early TTS audio from streaming
+    let earlyTtsAudioUrl = null;
     
-    if (transcript && transcript.trim()) {
-    } else {
-        console.log('🔄 BACKEND: No transcript provided, returning empty response');
-        return res.status(200).json({
-          transcript: "",
-          responseText: "",
-          audioUrl: null,
-          keyHighlights: {},
-        message: "No transcript provided",
-          meta: { mode, voice, language }
-      });
-    }
-
     // ==========================================================
-
-    // --- Sentiment Analysis ---
-    let sentimentData = null;
-    try {
-      console.log('🔄 BACKEND: Starting sentiment analysis...');
-      sentimentData = await analyzeSentiment(transcript);
-      console.log('🔄 BACKEND: Sentiment analysis complete:', sentimentData);
-    } catch (sentimentError) {
-      console.error('🔄 BACKEND: Sentiment analysis error:', sentimentError.message);
-      sentimentData = null;
-    }
-
-    // --- GPT (with combined key highlights for sales mode) ---
-    let keyHighlights = {};
-    try {
-      let matchedQuestion = null;
-
-      // For sales mode, first search MongoDB for matching questions
-      if (mode === "sales") {
-
-        // Extract just the user's question from the frontend's prompt
-        const userQuestion = extractUserQuestion(transcript);
-
-        // Parse multiple questions from user input
-        const questions = parseMultipleQuestions(userQuestion);
-
-        console.log('🔄 BACKEND: Searching for matching questions in database...');
-
-        // Search for matches for all questions
-        // Only try normal search for speed (2-3 sec target)
-        let matchedQuestions = await salesQAService.findMultipleMatchingQuestions(questions);
+    // === TTS HELPER FUNCTION (defined early for use in DB responses) ===
+    // Helper function to generate TTS
+    const generateTTS = async (text, voiceParam, lang) => {
+      try {
+        if (!text) return null;
         
-        console.log('🔄 BACKEND: Found', matchedQuestions.length, 'matching questions');
-
-        if (matchedQuestions.length > 0) {
-          console.log('🔄 BACKEND: Using database responses (skip GPT for speed)');
-          // Skip GPT call and use database responses directly for faster response
-          responseText = matchedQuestions.map((match, index) => {
-            // Get answers in correct order (A, B, C)
-            const answerA = match.answers.find(a => a.option === 'A');
-            const answerB = match.answers.find(a => a.option === 'B');
-            const answerC = match.answers.find(a => a.option === 'C');
-            return `Response A: ${answerA?.text || ''}\nResponse B: ${answerB?.text || ''}\nResponse C: ${answerC?.text || ''}`;
-          }).join('\n\n');
-          
-          // No key highlights extraction for matched questions (skip GPT call for faster response)
-          keyHighlights = {};
-        } else {
-          console.log('🔄 BACKEND: No match found, searching related questions for GPT context...');
-          // No matching question found, find related questions for GPT context
-
-          // Extract user question for related search
-          const userQuestion = extractUserQuestion(transcript);
-          const relatedQuestions = await salesQAService.findRelatedQuestionsForGPT(userQuestion);
-
-          console.log('🔄 BACKEND: Found', relatedQuestions.length, 'related questions for GPT context');
-
-          if (relatedQuestions.length > 0) {
-
-            // Create enhanced context from related questions
-            const contextQuestions = relatedQuestions.map((q, index) => {
-              const answerA = q.answers.find(a => a.option === 'A');
-              const answerB = q.answers.find(a => a.option === 'B');
-              const answerC = q.answers.find(a => a.option === 'C');
-              return `Example ${index + 1}:\nQ: ${q.question}\nA: ${answerA?.text || ''}\nB: ${answerB?.text || ''}\nC: ${answerC?.text || ''}\nCategory: ${q.category}`;
-            }).join('\n\n');
-
-            // Build conversation context for GPT
-            let conversationContext = "";
-            if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
-              conversationContext = "\n\nCONVERSATION HISTORY:\n";
-              conversationHistory.slice(-5).forEach((entry, index) => {
-                conversationContext += `Previous ${index + 1}:\n`;
-                conversationContext += `Customer: ${entry.userInput}\n`;
-                conversationContext += `Your Response: ${entry.predatorResponse}\n\n`;
-              });
-              conversationContext += "Use this conversation history to provide contextually relevant responses that build on previous interactions.\n";
-            }
-
-            let systemPrompt = `You are an expert sales assistant. You have access to a database of proven sales responses. 
-            Here are some related sales scenarios and their successful responses:
-            ${contextQuestions}
-            ${conversationContext}
-            
-            Your task: Analyze the customer's question and provide 3 persuasive sales responses (A, B, C format) that are relevant to their specific concern. Use the context above to understand the sales approach and tone. Consider the conversation history to provide contextually relevant responses.`;
-
-            systemPrompt = addLanguageInstruction(systemPrompt, language);
-
-            let userPrompt = `Customer asked: "${userQuestion}". 
-            Based on the sales context above and conversation history, provide 3 short, persuasive sales responses (A, B, C format) that directly address their question. Make sure each response is different and covers different angles of persuasion.`;
-            
-            userPrompt = addLanguageInstruction(userPrompt, language);
-
-            console.log('🔄 BACKEND: Calling GPT-4 with related context...');
-            // Combined GPT call for response + key highlights
-            const result = await getGPTResponseWithKeyHighlights(
-              systemPrompt,
-              userPrompt,
-              "gpt-4",
-              250,
-              0.8,
-              userQuestion
-            );
-            console.log('🔄 BACKEND: GPT response received');
-            responseText = result.responseText;
-            keyHighlights = result.keyHighlights;
-          } else {
-            console.log('🔄 BACKEND: No related questions, using general GPT response...');
-            // No related questions found, use general sales response
-
-            // Build conversation context for general sales response
-            let conversationContext = "";
-            if (conversationHistory && conversationHistory.length > 0) {
-              conversationContext = "\n\nCONVERSATION HISTORY:\n";
-              conversationHistory.slice(-5).forEach((entry, index) => {
-                conversationContext += `Previous ${index + 1}:\n`;
-                conversationContext += `Customer: ${entry.userInput}\n`;
-                conversationContext += `Your Response: ${entry.predatorResponse}\n\n`;
-              });
-              conversationContext += "Use this conversation history to provide contextually relevant responses that build on previous interactions.\n";
-            }
-
-            let systemPrompt = `You are a sales assistant. Be persuasive and helpful. Keep responses short.${conversationContext}`;
-            systemPrompt = addLanguageInstruction(systemPrompt, language);
-            
-            const userQuestion = extractUserQuestion(transcript);
-            let userPrompt = `Customer: "${transcript}". Give 3 short sales responses (A, B, C format). Consider the conversation history to provide contextually relevant responses.`;
-            userPrompt = addLanguageInstruction(userPrompt, language);
-
-            console.log('🔄 BACKEND: Calling GPT-4 (general sales)...');
-            // Combined GPT call for response + key highlights
-            const result = await getGPTResponseWithKeyHighlights(
-              systemPrompt,
-              userPrompt,
-              "gpt-4",
-              200,
-              0.7,
-              userQuestion
-            );
-            console.log('🔄 BACKEND: GPT response received');
-            responseText = result.responseText;
-            keyHighlights = result.keyHighlights;
-          }
-        }
-      } else {
-        console.log('🔄 BACKEND: Using support mode GPT...');
-        // For support mode, use original logic
-
-        let systemPrompt = `You are a helpful customer support assistant. Be empathetic and provide clear solutions.`;
-        systemPrompt = addLanguageInstruction(systemPrompt, language);
-        
-        let userPrompt = `Customer said: "${transcript}". Please provide a helpful response. Keep it concise and professional.`;
-        userPrompt = addLanguageInstruction(userPrompt, language);
-
-        console.log('🔄 BACKEND: Calling GPT-3.5 (support mode)...');
-        const completion = await openai.chat.completions.create({
-          model: "gpt-3.5-turbo",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt }
-          ],
-          max_tokens: 200,
-          temperature: 0.7,
-        });
-
-        console.log('🔄 BACKEND: GPT support response received');
-        responseText = completion.choices[0].message.content;
-      }
-
-    } catch (gptError) {
-      console.error('🔄 BACKEND: GPT error:', gptError.message);
-      
-      // Check for quota exceeded error
-      if (gptError.status === 429 || gptError.code === 'insufficient_quota') {
-        responseText = `Response A: I'd be happy to help you with that. Let me provide you with more information.
-
-Response B: That's a great question. Based on your needs, here's what I recommend.
-
-Response C: I understand your concern. Let's explore the best solution for you.`;
-      } else {
-        responseText = "AI response generation failed. Please try again.";
-      }
-    }
-
-    // ==========================================================
-    // === TTS SECTION ===
-    try {
-      if (responseText) {
-        console.log('🔄 BACKEND: Starting TTS generation...');
-
         // Extract ONLY Response A text for TTS - SIMPLE & DIRECT METHOD
         let ttsText = "";
         
         // Find position of "Response A:" (case insensitive)
-        const responseAIndex = responseText.toLowerCase().indexOf("response a:");
+        const responseAIndex = text.toLowerCase().indexOf("response a:");
         
         if (responseAIndex !== -1) {
           // Find where Response A text ends (before Response B: or Response C:)
-          const afterResponseA = responseText.substring(responseAIndex + "Response A:".length);
+          const afterResponseA = text.substring(responseAIndex + "Response A:".length);
           
           // Find positions of Response B: and Response C:
           const responseBIndex = afterResponseA.toLowerCase().indexOf("response b:");
@@ -665,7 +694,7 @@ Response C: I understand your concern. Let's explore the best solution for you.`
           
         } else {
           // If no "Response A:" found, use first line only
-          const firstLine = responseText.split('\n')[0];
+          const firstLine = text.split('\n')[0];
           ttsText = firstLine.replace(/^Response [ABC]:\s*/i, "").trim();
         }
 
@@ -684,39 +713,392 @@ Response C: I understand your concern. Let's explore the best solution for you.`
         
         // Final validation: if still contains Response B or C, SKIP TTS entirely
         if (ttsText.toLowerCase().includes("response b") || ttsText.toLowerCase().includes("response c")) {
-          ttsText = "";
+          return null;
         }
 
         // If no valid text found, skip TTS
         if (!ttsText || ttsText.length === 0) {
-          audioUrl = null; // Ensure audioUrl is null if no valid text
-          console.log('🔄 BACKEND: No valid TTS text, skipping audio generation');
-        } else {
-          // FINAL VERIFICATION: Log exact text being sent to TTS
-          
-          const ttsVoice = getVoiceForLanguage(voice, language);
-          const ttsRequest = {
-            input: { text: ttsText },
-            voice: {
-              languageCode: language,
-              name: ttsVoice,
-              ssmlGender: "NEUTRAL",
-            },
-            audioConfig: { audioEncoding: "MP3" },
-          };
+          return null;
+        }
+        
+        const ttsVoice = getVoiceForLanguage(voiceParam, lang);
+        const ttsRequest = {
+          input: { text: ttsText },
+          voice: {
+            languageCode: lang,
+            name: ttsVoice,
+            ssmlGender: "NEUTRAL",
+          },
+          audioConfig: { audioEncoding: "MP3" },
+        };
 
-          const ttsPromise = ttsClient.synthesizeSpeech(ttsRequest);
-          const [ttsResponse] = await ttsPromise;
-          const audioBase64 = ttsResponse.audioContent.toString("base64");
-          audioUrl = `data:audio/mp3;base64,${audioBase64}`;
-          console.log('🔄 BACKEND: TTS audio generated successfully');
+        const [ttsResponse] = await ttsClient.synthesizeSpeech(ttsRequest);
+        const audioBase64 = ttsResponse.audioContent.toString("base64");
+        return `data:audio/mp3;base64,${audioBase64}`;
+      } catch (ttsError) {
+        console.error('🔄 BACKEND: TTS error:', ttsError.message);
+        return null;
+      }
+    };
+
+    // ==========================================================
+    // === TRANSCRIPT SECTION (Use provided live transcript from WebSocket STT) ===
+    transcript = req.body?.transcript || "";
+    
+    if (transcript && transcript.trim()) {
+    } else {
+        return res.status(200).json({
+          transcript: "",
+          responseText: "",
+          audioUrl: null,
+          keyHighlights: {},
+        message: "No transcript provided",
+          meta: { mode, voice, language }
+      });
+    }
+
+    // ==========================================================
+
+    // --- TRANSLATION: If German, translate query to English for database search ---
+    const isGerman = language === "de-DE";
+    let originalTranscript = transcript;
+    let englishTranscript = transcript;
+    let englishUserQuestion = "";
+    
+    if (isGerman) {
+      try {
+        console.log('🔄 BACKEND: Translating German query to English for database search...');
+        const translationStartTime = Date.now();
+        englishTranscript = await translateGermanToEnglish(transcript);
+        console.log(`⏱️ BACKEND: German to English translation time: ${Date.now() - translationStartTime}ms`);
+        console.log(`🔄 BACKEND: Original (German): "${transcript.substring(0, 100)}..."`);
+        console.log(`🔄 BACKEND: Translated (English): "${englishTranscript.substring(0, 100)}..."`);
+      } catch (translationError) {
+        console.error('🔄 BACKEND: Translation error, using original transcript:', translationError.message);
+        englishTranscript = transcript; // Fallback to original if translation fails
+      }
+    }
+
+    // Extract user question once for reuse (optimization)
+    // Use English transcript for extraction if German
+    const extractStartTime = Date.now();
+    englishUserQuestion = extractUserQuestion(isGerman ? englishTranscript : transcript);
+    const questions = mode === "sales" ? parseMultipleQuestions(englishUserQuestion) : [];
+    const extractTime = Date.now() - extractStartTime;
+    console.log(`⏱️ BACKEND: Extract question time: ${extractTime}ms`);
+
+    // --- PARALLEL OPERATIONS: Sentiment Analysis + Database Search (COMPLETELY NON-BLOCKING) ---
+    // OPTIMIZATION: NO TIMEOUT - Start GPT immediately, DB search runs in background
+    // If DB finds match, use it; otherwise use GPT response
+    const parallelStartTime = Date.now();
+    const sentimentPromise = analyzeSentiment(isGerman ? englishTranscript : transcript).catch(err => {
+      console.error('🔄 BACKEND: Sentiment analysis error:', err.message);
+      return null;
+    });
+    const dbSearchPromise = mode === "sales" ? salesQAService.findMultipleMatchingQuestions(questions) : Promise.resolve([]);
+    
+    // Start both promises but DON'T WAIT - GPT starts immediately
+    // DB search will complete in background and we'll check it later if needed
+    let sentimentData = null;
+    let matchedQuestions = [];
+    let dbSearchCompleted = false;
+    
+    // Start DB search in background (no timeout, no blocking)
+    // But we'll check it quickly to see if we have a match before starting GPT
+    let dbSearchResolved = false;
+    dbSearchPromise.then(results => {
+      matchedQuestions = results;
+      dbSearchCompleted = true;
+      dbSearchResolved = true;
+      const dbCheckTime = Date.now() - parallelStartTime;
+      console.log(`⏱️ BACKEND: DB search completed in background: ${dbCheckTime}ms (matched: ${matchedQuestions.length})`);
+      if (mode === "sales" && matchedQuestions.length > 0) {
+        console.log(`🔍 BACKEND: Found DB matches:`, matchedQuestions.map(m => ({ question: m.matchedQuestion, similarity: m.similarity })));
+      }
+    }).catch(err => {
+      console.error('🔄 BACKEND: DB search error:', err.message);
+      dbSearchCompleted = true;
+      dbSearchResolved = true;
+    });
+
+    // --- GPT (with combined key highlights for sales mode) ---
+    // OPTIMIZATION: Start GPT IMMEDIATELY without waiting for DB
+    let keyHighlights = {};
+    let useDbResponse = false;
+    let dbResponseText = "";
+    
+    try {
+      // Wait for DB search to complete (max 1 second) - prioritize database matches
+      // This ensures we use database responses when available before starting GPT
+      const dbWaitStart = Date.now();
+      while (!dbSearchResolved && (Date.now() - dbWaitStart) < 1000) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      const dbWaitTime = Date.now() - dbWaitStart;
+      if (dbWaitTime > 50) {
+        console.log(`⏱️ BACKEND: Waited ${dbWaitTime}ms for DB search`);
+      }
+      
+      // Start GPT if no DB match, otherwise use DB response
+      if (mode === "sales") {
+        // Check if DB found matches (even if search is still running, use what we have)
+        if (matchedQuestions.length > 0) {
+          console.log(`✅ BACKEND: Using database response (found ${matchedQuestions.length} match(es) immediately)`);
+          useDbResponse = true;
+          
+          // Use database responses directly for faster response
+          let englishResponseText = matchedQuestions.map((match, index) => {
+            // Get answers in correct order (A, B, C)
+            const answerA = match.answers.find(a => a.option === 'A');
+            const answerB = match.answers.find(a => a.option === 'B');
+            const answerC = match.answers.find(a => a.option === 'C');
+            return `Response A: ${answerA?.text || ''}\nResponse B: ${answerB?.text || ''}\nResponse C: ${answerC?.text || ''}`;
+          }).join('\n\n');
+          
+          // Translate response back to German if language is German
+          if (isGerman) {
+            try {
+              console.log('🔄 BACKEND: Translating database response to German...');
+              const translationStartTime = Date.now();
+              dbResponseText = await translateEnglishToGerman(englishResponseText);
+              console.log(`⏱️ BACKEND: English to German translation time: ${Date.now() - translationStartTime}ms`);
+            } catch (translationError) {
+              console.error('🔄 BACKEND: Response translation error, using English:', translationError.message);
+              dbResponseText = englishResponseText; // Fallback to English if translation fails
+            }
+          } else {
+            dbResponseText = englishResponseText;
+          }
+          
+          responseText = dbResponseText;
+          
+          // Generate TTS immediately for database response (no 25-word check needed)
+          // Database responses are short, so generate TTS right away
+          try {
+            const dbTtsStartTime = Date.now();
+            audioUrl = await generateTTS(responseText, voice, language).catch(err => {
+              console.error('🔄 BACKEND: Database response TTS error:', err.message);
+              return null;
+            });
+            if (audioUrl) {
+              console.log(`⚡ BACKEND: Database response TTS generated in ${Date.now() - dbTtsStartTime}ms`);
+            }
+          } catch (ttsErr) {
+            console.error('🔄 BACKEND: Database response TTS generation failed:', ttsErr.message);
+          }
+          
+          // Run key highlights extraction in parallel (non-blocking)
+          const userQuestionForHighlights = isGerman ? extractUserQuestion(originalTranscript) : englishUserQuestion;
+          detectKeyHighlights(userQuestionForHighlights, conversationHistory).then(h => {
+            if (h && Object.keys(h).length > 0) {
+              keyHighlights = h;
+            }
+          }).catch(err => {
+            console.error('🔄 BACKEND: Key highlights extraction error:', err.message);
+          });
+        } else {
+          // No DB match found immediately - start GPT streaming immediately
+          // OPTIMIZATION: Start GPT with minimal context (conversation history only)
+          // Don't wait for related questions search - it's too slow
+          
+          // Build conversation context for GPT
+          let conversationContext = "";
+          if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
+            conversationContext = "\n\nCONVERSATION HISTORY:\n";
+            conversationHistory.slice(-5).forEach((entry, index) => {
+              conversationContext += `Previous ${index + 1}:\n`;
+              conversationContext += `Customer: ${entry.userInput}\n`;
+              conversationContext += `Your Response: ${entry.predatorResponse}\n\n`;
+            });
+            conversationContext += "Use this conversation history to provide contextually relevant responses that build on previous interactions.\n";
+          }
+
+          let systemPrompt = `You are an expert sales assistant. Be persuasive and helpful. Keep responses short and relevant.${conversationContext}`;
+          systemPrompt = addLanguageInstruction(systemPrompt, language);
+
+          // Use original user question (in German if German, English otherwise) for GPT prompt
+          const userQuestionForGPT = isGerman ? extractUserQuestion(originalTranscript) : englishUserQuestion;
+          let userPrompt = `Customer asked: "${userQuestionForGPT}". 
+          Provide 3 short, persuasive sales responses (A, B, C format) that directly address their question. Make sure each response is different and covers different angles of persuasion.`;
+          
+          userPrompt = addLanguageInstruction(userPrompt, language);
+          
+          // Combined GPT call for response + key highlights with STREAMING for early TTS
+          // OPTIMIZATION: Use streaming to trigger TTS as soon as Response A has 25 words
+          try {
+            const gptStartTime = Date.now();
+            
+            // Callback for early TTS audio - stores it in shared variable
+            const onEarlyTTS = (audioUrl) => {
+              earlyTtsAudioUrl = audioUrl;
+              console.log(`⚡ BACKEND: Early TTS audio ready!`);
+            };
+            
+            const result = await getGPTResponseWithKeyHighlightsStreaming(
+              systemPrompt,
+              userPrompt,
+              "gpt-4o-mini", // Using faster model
+              200, // Reduced from 250 for faster response
+              0.7, // Reduced from 0.8 for faster response
+              userQuestionForGPT,
+              onEarlyTTS,
+              ttsClient,
+              voice,
+              language
+            );
+            console.log(`⏱️ BACKEND: GPT call (minimal context, streaming) time: ${Date.now() - gptStartTime}ms`);
+            responseText = result.responseText; // GPT response is already in German if language is German (handled by addLanguageInstruction)
+            keyHighlights = result.keyHighlights || {};
+            
+            // Use early TTS audio if available
+            if (earlyTtsAudioUrl) {
+              audioUrl = earlyTtsAudioUrl;
+              console.log(`⚡ BACKEND: Using early TTS audio (generated during GPT streaming)`);
+            }
+            
+            // If no key highlights from GPT, try separate extraction (non-blocking)
+            // Use original user question (in original language) for key highlights
+            const userQuestionForHighlights = isGerman ? extractUserQuestion(originalTranscript) : englishUserQuestion;
+            if (!keyHighlights || Object.keys(keyHighlights).length === 0) {
+              // Run in background, don't wait
+              detectKeyHighlights(userQuestionForHighlights, conversationHistory).then(h => {
+                if (h && Object.keys(h).length > 0) {
+                  keyHighlights = h;
+                }
+              }).catch(err => {
+                console.error('🔄 BACKEND: Separate key highlights extraction error:', err.message);
+              });
+            }
+          } catch (gptError) {
+            console.error('🔄 BACKEND: GPT call failed, trying separate key highlights extraction:', gptError.message);
+            // If GPT fails, try to extract key highlights separately
+            const userQuestionForHighlights = isGerman ? extractUserQuestion(originalTranscript) : englishUserQuestion;
+            try {
+              keyHighlights = await detectKeyHighlights(userQuestionForHighlights, conversationHistory);
+            } catch (extractError) {
+              console.error('🔄 BACKEND: Separate extraction also failed:', extractError.message);
+              keyHighlights = {};
+            }
+            throw gptError; // Re-throw to be handled by outer catch
+          }
+        }
+      } else if (mode === "support") {
+        // For support mode, use original logic
+        // Use original transcript (in original language) for support mode
+        const transcriptForSupport = isGerman ? originalTranscript : transcript;
+
+        let systemPrompt = `You are a helpful customer support assistant. Be empathetic and provide clear solutions.`;
+        systemPrompt = addLanguageInstruction(systemPrompt, language);
+        
+        let userPrompt = `Customer said: "${transcriptForSupport}". Please provide a helpful response. Keep it concise and professional.`;
+        userPrompt = addLanguageInstruction(userPrompt, language);
+
+        const gptStartTime = Date.now();
+        const completion = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+          max_tokens: 200,
+          temperature: 0.7,
+        });
+        console.log(`⏱️ BACKEND: GPT call (support mode) time: ${Date.now() - gptStartTime}ms`);
+
+        responseText = completion.choices[0].message.content;
+      }
+
+    } catch (gptError) {
+      console.error('🔄 BACKEND: GPT error:', gptError.message);
+      
+      // Check for quota exceeded error
+      if (gptError.status === 429 || gptError.code === 'insufficient_quota') {
+        responseText = `Response A: I'd be happy to help you with that. Let me provide you with more information.
+
+Response B: That's a great question. Based on your needs, here's what I recommend.
+
+Response C: I understand your concern. Let's explore the best solution for you.`;
+      } else {
+        responseText = "AI response generation failed. Please try again.";
+      }
+      
+      // Final fallback: Try to extract key highlights even if GPT failed
+      // Use original user question (in original language) for key highlights
+      const userQuestionForHighlights = isGerman ? extractUserQuestion(originalTranscript) : englishUserQuestion;
+      if (!keyHighlights || Object.keys(keyHighlights).length === 0) {
+        try {
+          keyHighlights = await detectKeyHighlights(userQuestionForHighlights, conversationHistory);
+        } catch (extractError) {
+          console.error('🔄 BACKEND: Outer catch - key highlights extraction failed:', extractError.message);
+          // keyHighlights remains as {} or whatever was set before
+        }
+      }
+    }
+
+    // ==========================================================
+    // === TTS SECTION (Generate as soon as we have responseText) ===
+    // Note: generateTTS function is defined at the top of the function scope
+    // Note: earlyTtsAudioUrl is declared at the top of the function scope
+
+    // Get sentiment data (if ready)
+    try {
+      sentimentData = await Promise.race([
+        sentimentPromise,
+        new Promise(resolve => setTimeout(() => resolve(null), 100)) // Wait max 100ms
+      ]);
+    } catch (e) {
+      sentimentData = null;
+    }
+    const parallelTime = Date.now() - parallelStartTime;
+    if (parallelTime > 100) {
+      console.log(`⏱️ BACKEND: Background operations (sentiment + DB search) time: ${parallelTime}ms`);
+    }
+    
+    // Calculate timing BEFORE waiting for TTS
+    const gptProcessingEndTime = Date.now();
+    const processingTime = gptProcessingEndTime - parallelStartTime;
+    
+    // OPTIMIZATION: If early TTS was triggered, wait a bit for it to complete, otherwise generate normally
+    const ttsStartTime = Date.now();
+    try {
+      if (audioUrl) {
+        // Early TTS already available - use it
+        console.log(`⚡ BACKEND: Using early TTS audio (no additional generation needed)`);
+      } else if (responseText) {
+        // Early TTS not triggered or not ready - wait a bit if it might be generating, then generate normally
+        if (mode === "sales") {
+          // For sales mode, wait up to 300ms for early TTS to complete (reduced from 500ms)
+          const earlyTtsWaitStart = Date.now();
+          while (!earlyTtsAudioUrl && !audioUrl && (Date.now() - earlyTtsWaitStart) < 300) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+          }
+          if (earlyTtsAudioUrl && !audioUrl) {
+            audioUrl = earlyTtsAudioUrl;
+            console.log(`⚡ BACKEND: Early TTS completed after ${Date.now() - earlyTtsWaitStart}ms wait`);
+          }
+        }
+        
+        // If still no audio URL, generate TTS normally
+        if (!audioUrl) {
+          audioUrl = await generateTTS(responseText, voice, language).catch(err => {
+            console.error('🔄 BACKEND: TTS generation error:', err.message);
+            return null;
+          });
+          if (audioUrl) {
+            console.log(`⏱️ BACKEND: Normal TTS generation time: ${Date.now() - ttsStartTime}ms`);
+          }
         }
       }
     } catch (ttsError) {
-      console.error('🔄 BACKEND: TTS error:', ttsError.message);
+      console.error('🔄 BACKEND: TTS final error:', ttsError.message);
+      audioUrl = null;
     }
 
-    console.log('🔄 BACKEND: Pipeline complete, sending response');
+    const totalTime = Date.now() - pipelineStartTime;
+    const ttsTime = audioUrl ? (Date.now() - ttsStartTime) : 0;
+    console.log(`✅ BACKEND: Total pipeline time: ${totalTime}ms`);
+    console.log(`📊 BACKEND: Breakdown - Extract: ${extractTime}ms, Parallel ops: ${parallelTime}ms, GPT/Processing: ${processingTime}ms, TTS: ${ttsTime}ms`);
+
     return res.json({
       transcript,
       responseText,
@@ -1104,6 +1486,37 @@ router.post("/crm/create-custom-properties", async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ error: "Failed to create custom properties" });
+  }
+});
+
+// Get key highlights from HubSpot contact by email
+router.get("/crm/key-highlights/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    
+    if (!email) {
+      return res.status(400).json({ error: "Email parameter is required" });
+    }
+
+    const keyHighlights = await getKeyHighlightsByEmail(email);
+
+    if (!keyHighlights) {
+      return res.json({
+        success: true,
+        keyHighlights: {},
+        message: "No key highlights found for this customer"
+      });
+    }
+
+    return res.json({
+      success: true,
+      keyHighlights
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      error: "Failed to fetch key highlights from HubSpot",
+      details: error.message 
+    });
   }
 });
 

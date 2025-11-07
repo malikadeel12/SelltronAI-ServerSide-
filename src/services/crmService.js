@@ -89,7 +89,7 @@ Current customer query: "${transcript}"
 Extract only personal contact information (email, name, phone, company) mentioned in this specific query. Do not make assumptions.`;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         { role: "system", content: "You are a CRM data extraction assistant. Extract only factual information from customer conversations and return valid JSON." },
         { role: "user", content: extractionPrompt }
